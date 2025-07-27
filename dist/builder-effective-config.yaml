@@ -1,0 +1,19 @@
+directories:
+  output: dist
+  buildResources: assets
+files:
+  - filter:
+      - build/**/*
+      - build/**/*
+      - node_modules/**/*
+      - public/electron.js
+      - database/**/*
+extraMetadata:
+  main: build/electron.js
+appId: com.pressia.laundry
+productName: Pressia Laundry Management
+win:
+  target: nsis
+  icon: public/icon.ico
+extends: react-cra
+electronVersion: 25.9.8

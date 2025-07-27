@@ -94,11 +94,37 @@ code {
 
 /* Print styles */
 @media print {
+  body {
+    margin: 0;
+    padding: 0;
+    background: white !important;
+  }
+  
   .no-print {
     display: none !important;
   }
   
   .print-only {
     display: block !important;
+  }
+  
+  /* Hide everything except the receipt */
+  body > *:not(.receipt-container) {
+    display: none !important;
+  }
+  
+  .receipt-container {
+    display: block !important;
+    margin: 0 !important;
+    padding: 20px !important;
+    background: white !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+  
+  /* Ensure receipt content is visible */
+  .receipt-container * {
+    color: black !important;
+    background: white !important;
   }
 } 

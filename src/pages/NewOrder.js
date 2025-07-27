@@ -1,62 +1,66 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  FiUser, 
-  FiPhone, 
-  FiPackage, 
-  FiPlus, 
-  FiMinus, 
-  FiTrash2,
-  FiCalendar,
-  FiDollarSign,
-  FiPrinter,
-  FiShare2,
-  FiCopy
-} from 'react-icons/fi';
+import { useTranslation } from 'react-i18next';
+import { FiUser, FiPhone, FiPackage, FiPlus, FiMinus, FiTrash2, FiCalendar, FiDollarSign, FiPrinter, FiShare2, FiCopy } from 'react-icons/fi';
 import { formatCurrency, getPickupDate, calculateTotal, formatPickupDate } from '../utils/formatters';
 import toast from 'react-hot-toast';
 import Receipt from '../components/Receipt';
 
 const NewOrder = ({ onOrderCreated }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [itemTypes, setItemTypes] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [pickupDate, setPickupDate] = useState(getPickupDate());
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showReceipt, setShowReceipt] = useState(false);
   const [createdOrder, setCreatedOrder] = useState(null);
 
   useEffect(() => {
+    console.log('NewOrder component mounted');
+    console.log('window.electronAPI available:', !!window.electronAPI);
+    if (window.electronAPI) {
+      console.log('electronAPI methods:', Object.keys(window.electronAPI));
+      // Test if the API is working
+      if (window.electronAPI.test) {
+        console.log('Test result:', window.electronAPI.test());
+      }
+    }
     loadItemTypes();
   }, []);
 
   const loadItemTypes = async () => {
     try {
-      const result = await window.electronAPI.getItemTypes();
-      if (result.success) {
-        setItemTypes(result.data);
+      console.log('Loading item types...');
+      const types = await window.electronAPI.getItemTypes();
+      console.log('Item types response:', types);
+      
+      if (types && types.success && types.data) {
+        setItemTypes(types.data);
+        console.log('Item types loaded:', types.data.length, 'items');
+      } else {
+        console.error('Invalid response format:', types);
+        toast.error('Error loading item types: Invalid response');
       }
     } catch (error) {
       console.error('Error loading item types:', error);
-      toast.error('Erreur lors du chargement des types d\'articles');
-    } finally {
-      setIsLoading(false);
+      toast.error('Error loading item types: ' + error.message);
     }
   };
 
   const addItem = (itemType) => {
+    console.log('Adding item:', itemType);
     const existingItem = selectedItems.find(item => item.id === itemType.id);
-    
     if (existingItem) {
+      console.log('Updating existing item quantity');
       setSelectedItems(selectedItems.map(item =>
         item.id === itemType.id
           ? { ...item, quantity: item.quantity + 1 }
           : item
       ));
     } else {
+      console.log('Adding new item to selection');
       setSelectedItems([...selectedItems, { ...itemType, quantity: 1 }]);
     }
   };
@@ -68,104 +72,128 @@ const NewOrder = ({ onOrderCreated }) => {
   const updateQuantity = (itemId, newQuantity) => {
     if (newQuantity <= 0) {
       removeItem(itemId);
-      return;
+    } else {
+      setSelectedItems(selectedItems.map(item =>
+        item.id === itemId
+          ? { ...item, quantity: newQuantity }
+          : item
+      ));
     }
-    
-    setSelectedItems(selectedItems.map(item =>
-      item.id === itemId
-        ? { ...item, quantity: newQuantity }
-        : item
-    ));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!customerName.trim()) {
-      toast.error('Le nom du client est requis');
-      return;
-    }
-    
-    if (selectedItems.length === 0) {
-      toast.error('Veuillez sélectionner au moins un article');
+      toast.error('Please enter customer name');
       return;
     }
 
-    setIsSubmitting(true);
-    
+    if (!customerPhone.trim()) {
+      toast.error('Please enter customer phone');
+      return;
+    }
+
+    if (selectedItems.length === 0) {
+      toast.error('Please add at least one item');
+      return;
+    }
+
     try {
       const orderData = {
-        customerName: customerName.trim(),
-        customerPhone: customerPhone.trim(),
-        items: selectedItems,
-        totalAmount: calculateTotal(selectedItems),
-        pickupDate: pickupDate
+        customer_name: customerName,
+        customer_phone: customerPhone,
+        items: JSON.stringify(selectedItems),
+        total_amount: calculateTotal(selectedItems),
+        pickup_date: pickupDate,
+        status: 'pending',
+        created_at: new Date().toISOString()
       };
 
-      const result = await window.electronAPI.createOrder(orderData);
-      
-      if (result.success) {
-        const order = {
-          id: result.data.id,
-          customer_name: customerName,
-          customer_phone: customerPhone,
-          items: selectedItems,
-          total_amount: calculateTotal(selectedItems),
-          pickup_date: pickupDate,
-          created_at: new Date().toISOString()
-        };
-        
-        setCreatedOrder(order);
+      const response = await window.electronAPI.createOrder(orderData);
+      if (response && response.success && response.data) {
+        setCreatedOrder(response.data);
         setShowReceipt(true);
         onOrderCreated();
-        toast.success('Commande créée avec succès');
+        toast.success(t('newOrder.orderCreated'));
       } else {
-        toast.error('Erreur lors de la création de la commande');
+        console.error('Invalid order creation response:', response);
+        toast.error('Error creating order: Invalid response');
       }
     } catch (error) {
       console.error('Error creating order:', error);
-      toast.error('Erreur lors de la création de la commande');
-    } finally {
-      setIsSubmitting(false);
+      toast.error('Error creating order');
     }
   };
 
   const handlePrintReceipt = () => {
-    window.print();
+    // Ensure the receipt is visible before printing
+    setTimeout(() => {
+      // Try to print the receipt specifically
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.write(`
+          <html>
+            <head>
+              <title>Pressia Receipt</title>
+              <style>
+                body { 
+                  font-family: Arial, sans-serif; 
+                  margin: 20px; 
+                  background: white; 
+                }
+                .receipt { 
+                  max-width: 400px; 
+                  margin: 0 auto; 
+                  border: 1px solid #ccc; 
+                  padding: 20px; 
+                }
+                .header { text-align: center; margin-bottom: 20px; }
+                .total { font-size: 18px; font-weight: bold; margin-top: 20px; }
+              </style>
+            </head>
+            <body>
+              <div class="receipt">
+                <div class="header">
+                  <h1>Pressia - Laundry Receipt</h1>
+                </div>
+                <p><strong>Order:</strong> #${createdOrder.id}</p>
+                <p><strong>Customer:</strong> ${createdOrder.customer_name}</p>
+                <p><strong>Phone:</strong> ${createdOrder.customer_phone}</p>
+                <p><strong>Pickup Date:</strong> ${formatPickupDate(createdOrder.pickup_date)}</p>
+                <p><strong>Total:</strong> ${formatCurrency(createdOrder.total_amount)}</p>
+                <div class="total">
+                  Thank you for choosing Pressia!
+                </div>
+              </div>
+            </body>
+          </html>
+        `);
+        printWindow.document.close();
+        printWindow.print();
+        printWindow.close();
+      } else {
+        // Fallback to regular print
+        window.print();
+      }
+    }, 100);
   };
 
-  const handleCopyReceipt = async () => {
-    try {
-      const receiptText = `Commande Pressia\n\nClient: ${createdOrder.customer_name}\nTéléphone: ${createdOrder.customer_phone}\nDate de récupération: ${formatPickupDate(createdOrder.pickup_date)}\n\nArticles:\n${createdOrder.items.map(item => `${item.name} x${item.quantity} - ${formatCurrency(item.price * item.quantity)}`).join('\n')}\n\nTotal: ${formatCurrency(createdOrder.total_amount)}`;
-      
-      await navigator.clipboard.writeText(receiptText);
-      toast.success('Reçu copié dans le presse-papiers');
-    } catch (error) {
-      toast.error('Erreur lors de la copie du reçu');
-    }
+  const handleCopyReceipt = () => {
+    // Copy receipt text to clipboard
+    const receiptText = `Pressia - Laundry Receipt\nOrder: ${createdOrder.id}\nCustomer: ${createdOrder.customer_name}\nPhone: ${createdOrder.customer_phone}\nTotal: ${formatCurrency(createdOrder.total_amount)}\nPickup: ${formatPickupDate(createdOrder.pickup_date)}`;
+    navigator.clipboard.writeText(receiptText);
+    toast.success('Receipt copied to clipboard');
   };
 
   const handleNewOrder = () => {
+    setShowReceipt(false);
+    setCreatedOrder(null);
     setCustomerName('');
     setCustomerPhone('');
     setSelectedItems([]);
     setPickupDate(getPickupDate());
-    setShowReceipt(false);
-    setCreatedOrder(null);
   };
-
-  const total = calculateTotal(selectedItems);
-
-  if (isLoading) {
-    return (
-      <div className="p-6">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Chargement des types d'articles...</p>
-        </div>
-      </div>
-    );
-  }
 
   if (showReceipt && createdOrder) {
     return (
@@ -173,23 +201,19 @@ const NewOrder = ({ onOrderCreated }) => {
         <div className="max-w-2xl mx-auto">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                Commande créée avec succès !
-              </h2>
-              <p className="text-gray-600">
-                Le reçu a été généré. Vous pouvez l'imprimer ou le partager.
-              </p>
+              <h2 className="text-2xl font-bold text-green-600 mb-2">{t('newOrder.orderCreated')}</h2>
+              <p className="text-gray-600">{t('newOrder.printReceipt')}</p>
             </div>
-
+            
             <Receipt order={createdOrder} />
-
+            
             <div className="flex justify-center space-x-4 mt-6">
               <button
                 onClick={handlePrintReceipt}
                 className="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
               >
                 <FiPrinter className="w-4 h-4" />
-                <span>Imprimer</span>
+                <span>{t('newOrder.printReceipt')}</span>
               </button>
               
               <button
@@ -197,15 +221,15 @@ const NewOrder = ({ onOrderCreated }) => {
                 className="flex items-center space-x-2 px-4 py-2 bg-secondary-600 text-white rounded-lg hover:bg-secondary-700 transition-colors"
               >
                 <FiCopy className="w-4 h-4" />
-                <span>Copier</span>
+                <span>{t('newOrder.copyReceipt')}</span>
               </button>
               
               <button
                 onClick={handleNewOrder}
-                className="flex items-center space-x-2 px-4 py-2 bg-success-600 text-white rounded-lg hover:bg-success-700 transition-colors"
+                className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
               >
                 <FiPlus className="w-4 h-4" />
-                <span>Nouvelle commande</span>
+                <span>{t('newOrder.newOrder')}</span>
               </button>
             </div>
           </div>
@@ -217,95 +241,99 @@ const NewOrder = ({ onOrderCreated }) => {
   return (
     <div className="p-6">
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Nouvelle commande
-          </h1>
-          <p className="text-gray-600">
-            Créez une nouvelle commande de blanchisserie
-          </p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('newOrder.title')}</h1>
+          <p className="text-gray-600">{t('newOrder.customerInfo')}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Customer Information */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              Informations du client
-            </h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">{t('newOrder.customerInfo')}</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nom du client *
+                  <FiUser className="inline w-4 h-4 mr-2" />
+                  {t('newOrder.customerName')}
                 </label>
-                <div className="relative">
-                  <FiUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <input
-                    type="text"
-                    value={customerName}
-                    onChange={(e) => setCustomerName(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                    placeholder="Nom complet du client"
-                    required
-                  />
-                </div>
+                <input
+                  type="text"
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  placeholder="Enter customer name"
+                />
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Téléphone
+                  <FiPhone className="inline w-4 h-4 mr-2" />
+                  {t('newOrder.customerPhone')}
                 </label>
-                <div className="relative">
-                  <FiPhone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <input
-                    type="tel"
-                    value={customerPhone}
-                    onChange={(e) => setCustomerPhone(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                    placeholder="Numéro de téléphone"
-                  />
-                </div>
+                <input
+                  type="tel"
+                  value={customerPhone}
+                  onChange={(e) => setCustomerPhone(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  placeholder="Enter phone number"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <FiCalendar className="inline w-4 h-4 mr-2" />
+                  {t('newOrder.pickupDate')}
+                </label>
+                <input
+                  type="date"
+                  value={pickupDate}
+                  onChange={(e) => setPickupDate(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                />
               </div>
             </div>
           </div>
 
-          {/* Item Selection */}
+          {/* Items Selection */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              Sélection des articles
-            </h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">{t('newOrder.items')}</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-              {itemTypes.map((itemType) => (
-                <button
-                  key={itemType.id}
-                  type="button"
-                  onClick={() => addItem(itemType)}
-                  className="p-4 border border-gray-200 rounded-lg hover:border-primary-300 hover:bg-primary-50 transition-colors text-left"
-                >
-                  <div className="font-medium text-gray-900">{itemType.name}</div>
-                  <div className="text-sm text-gray-500">{itemType.category}</div>
-                  <div className="text-lg font-semibold text-primary-600 mt-2">
-                    {formatCurrency(itemType.price)}
-                  </div>
-                </button>
-              ))}
+              {itemTypes.length === 0 ? (
+                <div className="col-span-full text-center py-8">
+                  <p className="text-gray-500 mb-2">Loading item types...</p>
+                  <p className="text-sm text-gray-400">If this doesn't load, check the console for errors</p>
+                </div>
+              ) : (
+                itemTypes.map((itemType) => (
+                  <button
+                    key={itemType.id}
+                    type="button"
+                    onClick={() => addItem(itemType)}
+                    className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-primary-300 hover:bg-primary-50 transition-colors"
+                  >
+                    <div className="text-left">
+                      <h3 className="font-medium text-gray-900">{itemType.name}</h3>
+                      <p className="text-sm text-gray-500">{itemType.category}</p>
+                      <p className="text-sm font-semibold text-primary-600">{formatCurrency(itemType.price)}</p>
+                    </div>
+                    <FiPlus className="w-5 h-5 text-primary-600" />
+                  </button>
+                ))
+              )}
             </div>
 
             {/* Selected Items */}
             {selectedItems.length > 0 && (
-              <div className="border-t border-gray-200 pt-4">
-                <h3 className="text-md font-semibold text-gray-900 mb-4">
-                  Articles sélectionnés
-                </h3>
-                
+              <div className="border-t border-gray-200 pt-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Selected Items</h3>
                 <div className="space-y-3">
                   {selectedItems.map((item) => (
-                    <div key={item.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div key={item.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                       <div className="flex-1">
-                        <div className="font-medium text-gray-900">{item.name}</div>
-                        <div className="text-sm text-gray-500">{item.category}</div>
+                        <h4 className="font-medium text-gray-900">{item.name}</h4>
+                        <p className="text-sm text-gray-500">{item.category}</p>
+                        <p className="text-sm font-semibold text-primary-600">{formatCurrency(item.price)} each</p>
                       </div>
                       
                       <div className="flex items-center space-x-3">
@@ -313,35 +341,28 @@ const NewOrder = ({ onOrderCreated }) => {
                           <button
                             type="button"
                             onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                            className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-lg hover:bg-gray-100"
+                            className="p-1 text-gray-500 hover:text-gray-700"
                           >
                             <FiMinus className="w-4 h-4" />
                           </button>
-                          
                           <span className="w-8 text-center font-medium">{item.quantity}</span>
-                          
                           <button
                             type="button"
                             onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-lg hover:bg-gray-100"
+                            className="p-1 text-gray-500 hover:text-gray-700"
                           >
                             <FiPlus className="w-4 h-4" />
                           </button>
                         </div>
                         
                         <div className="text-right">
-                          <div className="font-medium text-gray-900">
-                            {formatCurrency(item.price * item.quantity)}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {formatCurrency(item.price)} × {item.quantity}
-                          </div>
+                          <p className="font-semibold text-gray-900">{formatCurrency(item.price * item.quantity)}</p>
                         </div>
                         
                         <button
                           type="button"
                           onClick={() => removeItem(item.id)}
-                          className="p-1 text-red-600 hover:text-red-700 hover:bg-red-50 rounded"
+                          className="p-1 text-red-500 hover:text-red-700"
                         >
                           <FiTrash2 className="w-4 h-4" />
                         </button>
@@ -349,68 +370,26 @@ const NewOrder = ({ onOrderCreated }) => {
                     </div>
                   ))}
                 </div>
+                
+                <div className="mt-6 pt-4 border-t border-gray-200">
+                  <div className="flex justify-between items-center">
+                    <span className="text-lg font-semibold text-gray-900">{t('newOrder.total')}</span>
+                    <span className="text-2xl font-bold text-primary-600">{formatCurrency(calculateTotal(selectedItems))}</span>
+                  </div>
+                </div>
               </div>
             )}
           </div>
 
-          {/* Pickup Date */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              Date de récupération
-            </h2>
-            
-            <div className="flex items-center space-x-3">
-              <FiCalendar className="text-gray-400 w-5 h-5" />
-              <input
-                type="date"
-                value={pickupDate}
-                onChange={(e) => setPickupDate(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-              />
-              <span className="text-sm text-gray-500">
-                (Date suggérée: {formatPickupDate(pickupDate)})
-              </span>
-            </div>
-          </div>
-
-          {/* Total and Submit */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-gray-900">
-                Total de la commande
-              </h2>
-              <div className="text-3xl font-bold text-primary-600">
-                {formatCurrency(total)}
-              </div>
-            </div>
-            
-            <div className="flex justify-end space-x-4">
-              <button
-                type="button"
-                onClick={() => navigate('/orders')}
-                className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                Annuler
-              </button>
-              
-              <button
-                type="submit"
-                disabled={isSubmitting || selectedItems.length === 0}
-                className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center space-x-2"
-              >
-                {isSubmitting ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    <span>Création...</span>
-                  </>
-                ) : (
-                  <>
-                    <FiPackage className="w-4 h-4" />
-                    <span>Créer la commande</span>
-                  </>
-                )}
-              </button>
-            </div>
+          {/* Submit Button */}
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              className="flex items-center space-x-2 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+            >
+              <FiDollarSign className="w-5 h-5" />
+              <span className="font-medium">{t('newOrder.createOrder')}</span>
+            </button>
           </div>
         </form>
       </div>

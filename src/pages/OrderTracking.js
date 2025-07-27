@@ -1,22 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FiSearch, FiFilter, FiEye, FiCheckCircle, FiPackage, FiX, FiCalendar, FiUser, FiPhone, FiDollarSign, FiPrinter, FiAlertTriangle, FiClock, FiCheck, FiXCircle } from 'react-icons/fi';
+import { FiAlertTriangle, FiClock, FiCheckCircle, FiPackage, FiCalendar, FiUser, FiPhone, FiDollarSign, FiPrinter, FiEye, FiFilter, FiSearch, FiX } from 'react-icons/fi';
 import { formatCurrency, formatDateTime, formatOrderStatus, getStatusColor, formatPickupDate } from '../utils/formatters';
 import toast from 'react-hot-toast';
 import Receipt from '../components/Receipt';
 
-const Orders = ({ onOrderUpdated }) => {
+const OrderTracking = ({ onOrderUpdated }) => {
   const { t } = useTranslation();
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [dateFilter, setDateFilter] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showReceipt, setShowReceipt] = useState(false);
   const [showStatusConfirm, setShowStatusConfirm] = useState(false);
   const [pendingStatusChange, setPendingStatusChange] = useState(null);
-  const [overdueOrders, setOverdueOrders] = useState([]);
-  const [urgentOrders, setUrgentOrders] = useState([]);
 
   useEffect(() => {
     loadOrders();
@@ -24,29 +23,7 @@ const Orders = ({ onOrderUpdated }) => {
 
   useEffect(() => {
     filterOrders();
-    checkOrderAlerts();
-  }, [orders, searchTerm, statusFilter]);
-
-  const checkOrderAlerts = () => {
-    const today = new Date();
-    const overdue = orders.filter(order => 
-      order.status === 'pending' && 
-      new Date(order.pickup_date) < today
-    );
-    const urgent = orders.filter(order => 
-      order.status === 'pending' && 
-      new Date(order.pickup_date) <= new Date(today.getTime() + 24 * 60 * 60 * 1000) && // Due today or tomorrow
-      new Date(order.pickup_date) >= today
-    );
-    
-    setOverdueOrders(overdue);
-    setUrgentOrders(urgent);
-    
-    // Show alerts for overdue orders
-    if (overdue.length > 0) {
-      toast.error(`${overdue.length} order(s) are overdue!`, { duration: 5000 });
-    }
-  };
+  }, [orders, searchTerm, statusFilter, dateFilter]);
 
   const loadOrders = async () => {
     try {
@@ -81,6 +58,40 @@ const Orders = ({ onOrderUpdated }) => {
       filtered = filtered.filter(order => order.status === statusFilter);
     }
 
+    // Filter by date
+    if (dateFilter !== 'all') {
+      const today = new Date();
+      const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+      
+      switch (dateFilter) {
+        case 'overdue':
+          filtered = filtered.filter(order => 
+            new Date(order.pickup_date) < today && order.status === 'pending'
+          );
+          break;
+        case 'today':
+          filtered = filtered.filter(order => 
+            new Date(order.pickup_date).toDateString() === today.toDateString() && order.status === 'pending'
+          );
+          break;
+        case 'tomorrow':
+          filtered = filtered.filter(order => 
+            new Date(order.pickup_date).toDateString() === tomorrow.toDateString() && order.status === 'pending'
+          );
+          break;
+        case 'this_week':
+          const weekEnd = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+          filtered = filtered.filter(order => 
+            new Date(order.pickup_date) >= today && 
+            new Date(order.pickup_date) <= weekEnd && 
+            order.status === 'pending'
+          );
+          break;
+        default:
+          break;
+      }
+    }
+
     setFilteredOrders(filtered);
   };
 
@@ -94,7 +105,7 @@ const Orders = ({ onOrderUpdated }) => {
     
     try {
       await window.electronAPI.updateOrderStatus(pendingStatusChange.orderId, pendingStatusChange.newStatus);
-      toast.success(t('orders.statusUpdated'));
+      toast.success('Order status updated successfully');
       loadOrders();
       onOrderUpdated();
     } catch (error) {
@@ -182,12 +193,76 @@ const Orders = ({ onOrderUpdated }) => {
     return colors[status] || 'bg-gray-100 text-gray-800';
   };
 
+  const getOrderPriority = (order) => {
+    const today = new Date();
+    const pickupDate = new Date(order.pickup_date);
+    const daysUntilPickup = Math.ceil((pickupDate - today) / (1000 * 60 * 60 * 24));
+    
+    if (pickupDate < today && order.status === 'pending') return 'overdue';
+    if (daysUntilPickup === 0 && order.status === 'pending') return 'today';
+    if (daysUntilPickup === 1 && order.status === 'pending') return 'tomorrow';
+    if (daysUntilPickup <= 3 && order.status === 'pending') return 'urgent';
+    return 'normal';
+  };
+
+  const getPriorityColor = (priority) => {
+    const colors = {
+      overdue: 'border-red-500 bg-red-50',
+      today: 'border-orange-500 bg-orange-50',
+      tomorrow: 'border-yellow-500 bg-yellow-50',
+      urgent: 'border-blue-500 bg-blue-50',
+      normal: 'border-gray-200 bg-gray-50'
+    };
+    return colors[priority] || colors.normal;
+  };
+
+  const getPriorityIcon = (priority) => {
+    const icons = {
+      overdue: FiAlertTriangle,
+      today: FiClock,
+      tomorrow: FiClock,
+      urgent: FiClock,
+      normal: FiCalendar
+    };
+    return icons[priority] || FiCalendar;
+  };
+
+  const getPriorityText = (priority) => {
+    const texts = {
+      overdue: 'Overdue',
+      today: 'Due Today',
+      tomorrow: 'Due Tomorrow',
+      urgent: 'Due Soon',
+      normal: 'Normal'
+    };
+    return texts[priority] || 'Normal';
+  };
+
+  const getPriorityTextColor = (priority) => {
+    const colors = {
+      overdue: 'text-red-600',
+      today: 'text-orange-600',
+      tomorrow: 'text-yellow-600',
+      urgent: 'text-blue-600',
+      normal: 'text-gray-600'
+    };
+    return colors[priority] || 'text-gray-600';
+  };
+
   const statusOptions = [
-    { value: 'all', label: t('orders.all') },
-    { value: 'pending', label: t('orders.pending') },
-    { value: 'completed', label: t('orders.completed') },
-    { value: 'picked_up', label: t('orders.pickedUp') },
-    { value: 'cancelled', label: t('orders.cancelled') }
+    { value: 'all', label: 'All Statuses' },
+    { value: 'pending', label: 'Pending' },
+    { value: 'completed', label: 'Completed' },
+    { value: 'picked_up', label: 'Picked Up' },
+    { value: 'cancelled', label: 'Cancelled' }
+  ];
+
+  const dateOptions = [
+    { value: 'all', label: 'All Dates' },
+    { value: 'overdue', label: 'Overdue' },
+    { value: 'today', label: 'Due Today' },
+    { value: 'tomorrow', label: 'Due Tomorrow' },
+    { value: 'this_week', label: 'This Week' }
   ];
 
   if (showReceipt && selectedOrder) {
@@ -196,7 +271,7 @@ const Orders = ({ onOrderUpdated }) => {
         <div className="max-w-2xl mx-auto">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">{t('orders.viewReceipt')}</h2>
+              <h2 className="text-2xl font-bold text-gray-900">View Receipt</h2>
               <button
                 onClick={() => setShowReceipt(false)}
                 className="p-2 text-gray-500 hover:text-gray-700"
@@ -215,43 +290,81 @@ const Orders = ({ onOrderUpdated }) => {
     <div className="p-6">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('orders.title')}</h1>
-        <p className="text-gray-600">Manage and track all laundry orders</p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Order Tracking</h1>
+        <p className="text-gray-600">Track orders by due dates and manage delivery schedules</p>
       </div>
 
-      {/* Alerts Section */}
-      {(overdueOrders.length > 0 || urgentOrders.length > 0) && (
-        <div className="mb-6 space-y-4">
-          {overdueOrders.length > 0 && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <div className="flex items-center">
-                <FiAlertTriangle className="w-5 h-5 text-red-600 mr-2" />
-                <h3 className="text-red-800 font-semibold">Overdue Orders ({overdueOrders.length})</h3>
-              </div>
-              <p className="text-red-700 text-sm mt-1">These orders are past their pickup date!</p>
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-red-600">Overdue Orders</p>
+              <p className="text-2xl font-bold text-red-900">
+                {orders.filter(order => new Date(order.pickup_date) < new Date() && order.status === 'pending').length}
+              </p>
             </div>
-          )}
-          
-          {urgentOrders.length > 0 && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <div className="flex items-center">
-                <FiClock className="w-5 h-5 text-yellow-600 mr-2" />
-                <h3 className="text-yellow-800 font-semibold">Urgent Orders ({urgentOrders.length})</h3>
-              </div>
-              <p className="text-yellow-700 text-sm mt-1">These orders are due today or tomorrow!</p>
-            </div>
-          )}
+            <FiAlertTriangle className="w-8 h-8 text-red-600" />
+          </div>
         </div>
-      )}
+
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-orange-600">Due Today</p>
+              <p className="text-2xl font-bold text-orange-900">
+                {orders.filter(order => 
+                  new Date(order.pickup_date).toDateString() === new Date().toDateString() && 
+                  order.status === 'pending'
+                ).length}
+              </p>
+            </div>
+            <FiClock className="w-8 h-8 text-orange-600" />
+          </div>
+        </div>
+
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-yellow-600">Due Tomorrow</p>
+              <p className="text-2xl font-bold text-yellow-900">
+                {orders.filter(order => 
+                  new Date(order.pickup_date).toDateString() === new Date(new Date().getTime() + 24 * 60 * 60 * 1000).toDateString() && 
+                  order.status === 'pending'
+                ).length}
+              </p>
+            </div>
+            <FiClock className="w-8 h-8 text-yellow-600" />
+          </div>
+        </div>
+
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-blue-600">This Week</p>
+              <p className="text-2xl font-bold text-blue-900">
+                {orders.filter(order => {
+                  const today = new Date();
+                  const weekEnd = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+                  return new Date(order.pickup_date) >= today && 
+                         new Date(order.pickup_date) <= weekEnd && 
+                         order.status === 'pending';
+                }).length}
+              </p>
+            </div>
+            <FiCalendar className="w-8 h-8 text-blue-600" />
+          </div>
+        </div>
+      </div>
 
       {/* Search and Filters */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="relative">
             <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <input
               type="text"
-              placeholder={t('orders.search')}
+              placeholder="Search orders..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
@@ -266,6 +379,21 @@ const Orders = ({ onOrderUpdated }) => {
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             >
               {statusOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="relative">
+            <FiCalendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <select
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            >
+              {dateOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
@@ -287,21 +415,16 @@ const Orders = ({ onOrderUpdated }) => {
           {filteredOrders.length === 0 ? (
             <div className="text-center py-8">
               <FiPackage className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">{t('orders.noOrders')}</p>
+              <p className="text-gray-500">No orders found matching your criteria</p>
             </div>
           ) : (
             <div className="space-y-4">
               {filteredOrders.map((order) => {
-                const isOverdue = new Date(order.pickup_date) < new Date() && order.status === 'pending';
-                const isUrgent = new Date(order.pickup_date) <= new Date(new Date().getTime() + 24 * 60 * 60 * 1000) && 
-                                new Date(order.pickup_date) >= new Date() && order.status === 'pending';
+                const priority = getOrderPriority(order);
+                const PriorityIcon = getPriorityIcon(priority);
                 
                 return (
-                  <div key={order.id} className={`flex items-center justify-between p-4 rounded-lg ${
-                    isOverdue ? 'bg-red-50 border border-red-200' : 
-                    isUrgent ? 'bg-yellow-50 border border-yellow-200' : 
-                    'bg-gray-50'
-                  }`}>
+                  <div key={order.id} className={`flex items-center justify-between p-4 rounded-lg border-l-4 ${getPriorityColor(priority)}`}>
                     <div className="flex items-center space-x-4">
                       <div className="flex-shrink-0">
                         <FiUser className="w-8 h-8 text-gray-400" />
@@ -309,12 +432,14 @@ const Orders = ({ onOrderUpdated }) => {
                       <div>
                         <div className="flex items-center space-x-2">
                           <h3 className="font-medium text-gray-900">{order.customer_name}</h3>
-                          {isOverdue && <FiAlertTriangle className="w-4 h-4 text-red-600" title="Overdue" />}
-                          {isUrgent && <FiClock className="w-4 h-4 text-yellow-600" title="Urgent" />}
+                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPriorityTextColor(priority)} bg-white`}>
+                            <PriorityIcon className="w-3 h-3 mr-1" />
+                            {getPriorityText(priority)}
+                          </span>
                         </div>
                         <p className="text-sm text-gray-500">{order.customer_phone}</p>
                         <p className="text-sm text-gray-500">Created: {formatDateTime(order.created_at)}</p>
-                        <p className={`text-sm ${isOverdue ? 'text-red-600 font-medium' : 'text-gray-500'}`}>
+                        <p className={`text-sm font-medium ${priority === 'overdue' ? 'text-red-600' : 'text-gray-600'}`}>
                           Pickup: {formatPickupDate(order.pickup_date)}
                         </p>
                       </div>
@@ -351,7 +476,7 @@ const Orders = ({ onOrderUpdated }) => {
                             className="p-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-colors"
                             title="Mark as Completed"
                           >
-                            <FiCheck className="w-4 h-4" />
+                            <FiCheckCircle className="w-4 h-4" />
                           </button>
                         )}
                         
@@ -412,4 +537,4 @@ const Orders = ({ onOrderUpdated }) => {
   );
 };
 
-export default Orders; 
+export default OrderTracking; 
