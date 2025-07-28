@@ -83,18 +83,25 @@ const Expenses = ({ onExpenseCreated }) => {
         category: formData.category,
         amount: parseFloat(formData.amount),
         date: formData.date,
-        description: formData.description || '',
-        created_at: new Date().toISOString()
+        description: formData.description || ''
       };
 
-      await window.electronAPI.createExpense(expenseData);
-      toast.success(editingExpense ? t('expenses.expenseUpdated') : t('expenses.expenseAdded'));
+      if (editingExpense) {
+        // Update existing expense
+        await window.electronAPI.updateExpense(editingExpense.id, expenseData);
+        toast.success(t('expenses.expenseUpdated'));
+      } else {
+        // Create new expense
+        await window.electronAPI.createExpense(expenseData);
+        toast.success(t('expenses.expenseAdded'));
+      }
+      
       resetForm();
       loadExpenses();
       onExpenseCreated();
     } catch (error) {
-      console.error('Error creating expense:', error);
-      toast.error('Error creating expense');
+      console.error('Error saving expense:', error);
+      toast.error('Error saving expense');
     }
   };
 
@@ -110,21 +117,26 @@ const Expenses = ({ onExpenseCreated }) => {
   };
 
   const handleEdit = (expense) => {
+    console.log('Editing expense:', expense);
     setEditingExpense(expense);
-    setFormData({
+    const newFormData = {
       category: expense.category,
       amount: expense.amount.toString(),
       date: expense.date,
       description: expense.description || ''
-    });
+    };
+    console.log('Setting form data:', newFormData);
+    setFormData(newFormData);
     setShowForm(true);
   };
 
   const handleDelete = async (expenseId) => {
     if (window.confirm('Are you sure you want to delete this expense?')) {
       try {
-        // Note: Delete functionality not implemented in backend yet
-        toast.error('Delete functionality not implemented yet');
+        await window.electronAPI.deleteExpense(expenseId);
+        toast.success(t('expenses.expenseDeleted'));
+        loadExpenses();
+        onExpenseCreated();
       } catch (error) {
         console.error('Error deleting expense:', error);
         toast.error('Error deleting expense');
@@ -239,6 +251,7 @@ const Expenses = ({ onExpenseCreated }) => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {console.log('Current formData:', formData)}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -247,7 +260,10 @@ const Expenses = ({ onExpenseCreated }) => {
                 </label>
                 <select
                   value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  onChange={(e) => {
+                    console.log('Category changed to:', e.target.value);
+                    setFormData({ ...formData, category: e.target.value });
+                  }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   required
                 >
@@ -269,7 +285,10 @@ const Expenses = ({ onExpenseCreated }) => {
                   type="number"
                   step="0.01"
                   value={formData.amount}
-                  onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                  onChange={(e) => {
+                    console.log('Amount changed to:', e.target.value);
+                    setFormData({ ...formData, amount: e.target.value });
+                  }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   placeholder="0.00"
                   required

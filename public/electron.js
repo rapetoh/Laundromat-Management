@@ -231,6 +231,39 @@ ipcMain.handle('db-create-expense', async (event, expenseData) => {
   }
 });
 
+ipcMain.handle('db-update-expense', async (event, expenseId, expenseData) => {
+  try {
+    const updateExpense = db.prepare(`
+      UPDATE expenses 
+      SET description = ?, amount = ?, category = ?, date = ?
+      WHERE id = ?
+    `);
+    
+    updateExpense.run(
+      expenseData.description,
+      expenseData.amount,
+      expenseData.category,
+      expenseData.date,
+      expenseId
+    );
+    
+    return { success: true, data: { id: expenseId } };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('db-delete-expense', async (event, expenseId) => {
+  try {
+    const deleteExpense = db.prepare('DELETE FROM expenses WHERE id = ?');
+    deleteExpense.run(expenseId);
+    
+    return { success: true, data: { id: expenseId } };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
 ipcMain.handle('db-get-item-types', async () => {
   try {
     const items = db.prepare('SELECT * FROM item_types ORDER BY category, name').all();

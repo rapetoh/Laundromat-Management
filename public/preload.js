@@ -16,6 +16,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   
   getExpenses: () => ipcRenderer.invoke('db-get-expenses'),
   createExpense: (expenseData) => ipcRenderer.invoke('db-create-expense', expenseData),
+  updateExpense: (expenseId, expenseData) => ipcRenderer.invoke('db-update-expense', expenseId, expenseData),
+  deleteExpense: (expenseId) => ipcRenderer.invoke('db-delete-expense', expenseId),
   
   getItemTypes: () => ipcRenderer.invoke('db-get-item-types'),
   createItemType: (itemData) => ipcRenderer.invoke('db-create-item-type', itemData),

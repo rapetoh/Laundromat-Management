@@ -52,11 +52,24 @@
       "build/**/*",
       "node_modules/**/*",
       "public/electron.js",
-      "database/**/*"
+      "public/preload.js"
     ],
     "win": {
-      "target": "nsis",
-      "icon": "public/icon.ico"
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "public/icon.ico",
+      "requestedExecutionLevel": "asInvoker"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Pressia Laundry Management"
     }
   },
   "browserslist": {
