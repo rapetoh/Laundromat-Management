@@ -36,7 +36,7 @@ const OrderTracking = ({ onOrderUpdated }) => {
       }
     } catch (error) {
       console.error('Error loading orders:', error);
-      toast.error('Error loading orders');
+      toast.error(t('orders.errorLoading'));
       setOrders([]);
     }
   };
@@ -105,12 +105,12 @@ const OrderTracking = ({ onOrderUpdated }) => {
     
     try {
       await window.electronAPI.updateOrderStatus(pendingStatusChange.orderId, pendingStatusChange.newStatus);
-      toast.success('Order status updated successfully');
+              toast.success(t('orders.statusUpdated'));
       loadOrders();
       onOrderUpdated();
     } catch (error) {
       console.error('Error updating order status:', error);
-      toast.error('Error updating order status');
+      toast.error(t('orders.errorUpdating'));
     } finally {
       setShowStatusConfirm(false);
       setPendingStatusChange(null);
@@ -229,10 +229,10 @@ const OrderTracking = ({ onOrderUpdated }) => {
 
   const getPriorityText = (priority) => {
     const texts = {
-      overdue: 'Overdue',
-      today: 'Due Today',
-      tomorrow: 'Due Tomorrow',
-      urgent: 'Due Soon',
+      overdue: t('orders.overdue'),
+      today: t('orders.dueToday'),
+      tomorrow: t('orders.dueTomorrow'),
+      urgent: t('orders.dueSoon'),
       normal: 'Normal'
     };
     return texts[priority] || 'Normal';
@@ -250,19 +250,19 @@ const OrderTracking = ({ onOrderUpdated }) => {
   };
 
   const statusOptions = [
-    { value: 'all', label: 'All Statuses' },
-    { value: 'pending', label: 'Pending' },
-    { value: 'completed', label: 'Completed' },
-    { value: 'picked_up', label: 'Picked Up' },
-    { value: 'cancelled', label: 'Cancelled' }
+    { value: 'all', label: t('orders.allStatuses') },
+    { value: 'pending', label: t('orders.pending') },
+    { value: 'completed', label: t('orders.completed') },
+    { value: 'picked_up', label: t('orders.pickedUp') },
+    { value: 'cancelled', label: t('orders.cancelled') }
   ];
 
   const dateOptions = [
-    { value: 'all', label: 'All Dates' },
-    { value: 'overdue', label: 'Overdue' },
-    { value: 'today', label: 'Due Today' },
-    { value: 'tomorrow', label: 'Due Tomorrow' },
-    { value: 'this_week', label: 'This Week' }
+    { value: 'all', label: t('orders.allDates') },
+    { value: 'overdue', label: t('orders.overdue') },
+    { value: 'today', label: t('orders.dueToday') },
+    { value: 'tomorrow', label: t('orders.dueTomorrow') },
+    { value: 'this_week', label: t('orders.thisWeek') }
   ];
 
   if (showReceipt && selectedOrder) {
@@ -407,7 +407,7 @@ const OrderTracking = ({ onOrderUpdated }) => {
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="p-6 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-900">
-            {filteredOrders.length} {filteredOrders.length === 1 ? 'Order' : 'Orders'} Found
+            {filteredOrders.length} {filteredOrders.length === 1 ? t('orders.orderFound') : t('orders.ordersFound')}
           </h2>
         </div>
         

@@ -45,6 +45,14 @@ function initializeDatabase() {
       created_at TEXT DEFAULT CURRENT_TIMESTAMP
     );
 
+    CREATE TABLE IF NOT EXISTS customers (
+      id TEXT PRIMARY KEY,
+      first_name TEXT NOT NULL,
+      last_name TEXT NOT NULL,
+      phone TEXT NOT NULL,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+
     CREATE TABLE IF NOT EXISTS settings (
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL,
@@ -289,6 +297,115 @@ ipcMain.handle('db-create-item-type', async (event, itemData) => {
     );
     
     return { success: true, data: { id: itemId } };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('db-update-item-type', async (event, itemId, itemData) => {
+  try {
+    const updateItem = db.prepare(`
+      UPDATE item_types 
+      SET name = ?, price = ?, category = ?
+      WHERE id = ?
+    `);
+    
+    updateItem.run(
+      itemData.name,
+      itemData.price,
+      itemData.category,
+      itemId
+    );
+    
+    return { success: true, data: { id: itemId } };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('db-delete-item-type', async (event, itemId) => {
+  try {
+    const deleteItem = db.prepare('DELETE FROM item_types WHERE id = ?');
+    deleteItem.run(itemId);
+    
+    return { success: true, data: { id: itemId } };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+// Customer operations
+ipcMain.handle('db-get-customers', async () => {
+  try {
+    const customers = db.prepare('SELECT * FROM customers ORDER BY first_name, last_name').all();
+    return { success: true, data: customers };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('db-create-customer', async (event, customerData) => {
+  try {
+    const customerId = require('crypto').randomUUID();
+    const insertCustomer = db.prepare(`
+      INSERT INTO customers (id, first_name, last_name, phone)
+      VALUES (?, ?, ?, ?)
+    `);
+    
+    insertCustomer.run(
+      customerId,
+      customerData.first_name,
+      customerData.last_name,
+      customerData.phone
+    );
+    
+    return { success: true, data: { id: customerId } };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('db-update-customer', async (event, customerId, customerData) => {
+  try {
+    const updateCustomer = db.prepare(`
+      UPDATE customers 
+      SET first_name = ?, last_name = ?, phone = ?
+      WHERE id = ?
+    `);
+    
+    updateCustomer.run(
+      customerData.first_name,
+      customerData.last_name,
+      customerData.phone,
+      customerId
+    );
+    
+    return { success: true, data: { id: customerId } };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('db-delete-customer', async (event, customerId) => {
+  try {
+    const deleteCustomer = db.prepare('DELETE FROM customers WHERE id = ?');
+    deleteCustomer.run(customerId);
+    
+    return { success: true, data: { id: customerId } };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('db-search-customers', async (event, searchTerm) => {
+  try {
+    const customers = db.prepare(`
+      SELECT * FROM customers 
+      WHERE first_name LIKE ? OR last_name LIKE ? OR phone LIKE ?
+      ORDER BY first_name, last_name
+    `).all(`%${searchTerm}%`, `%${searchTerm}%`, `%${searchTerm}%`);
+    
+    return { success: true, data: customers };
   } catch (error) {
     return { success: false, error: error.message };
   }

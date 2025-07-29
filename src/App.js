@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard';
 import NewOrder from './pages/NewOrder';
 import Orders from './pages/Orders';
 import OrderTracking from './pages/OrderTracking';
+import AddressBook from './pages/AddressBook';
 import Expenses from './pages/Expenses';
 import Settings from './pages/Settings';
 import { formatCurrency } from './utils/formatters';
@@ -84,6 +85,7 @@ function App() {
               <Route path="/new-order" element={<NewOrder onOrderCreated={loadDashboardStats} />} />
               <Route path="/orders" element={<Orders onOrderUpdated={loadDashboardStats} />} />
               <Route path="/order-tracking" element={<OrderTracking onOrderUpdated={loadDashboardStats} />} />
+              <Route path="/address-book" element={<AddressBook onAddressBookUpdated={loadDashboardStats} />} />
               <Route path="/expenses" element={<Expenses onExpenseCreated={loadDashboardStats} />} />
               <Route path="/settings" element={<Settings />} />
             </Routes>

@@ -21,6 +21,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
   
   getItemTypes: () => ipcRenderer.invoke('db-get-item-types'),
   createItemType: (itemData) => ipcRenderer.invoke('db-create-item-type', itemData),
+  updateItemType: (itemId, itemData) => ipcRenderer.invoke('db-update-item-type', itemId, itemData),
+  deleteItemType: (itemId) => ipcRenderer.invoke('db-delete-item-type', itemId),
+  
+  // Customer operations
+  getCustomers: () => ipcRenderer.invoke('db-get-customers'),
+  createCustomer: (customerData) => ipcRenderer.invoke('db-create-customer', customerData),
+  updateCustomer: (customerId, customerData) => ipcRenderer.invoke('db-update-customer', customerId, customerData),
+  deleteCustomer: (customerId) => ipcRenderer.invoke('db-delete-customer', customerId),
+  searchCustomers: (searchTerm) => ipcRenderer.invoke('db-search-customers', searchTerm),
   
   getDashboardStats: () => ipcRenderer.invoke('db-get-dashboard-stats'),
   

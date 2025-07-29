@@ -8,22 +8,23 @@ const resources = {
       loading: 'Loading Pressia...',
       
       // Sidebar
-          sidebar: {
-      dashboard: 'Dashboard',
-      newOrder: 'New Order',
-      orders: 'Orders',
-      orderTracking: 'Order Tracking',
-      expenses: 'Expenses',
-      settings: 'Settings',
-      tagline: 'Laundry Management',
-      todayOverview: "Today's Overview",
-      todayRevenue: 'Today Revenue',
-      pendingOrders: 'Pending Orders',
-      monthProfit: 'Month Profit',
-      monthExpenses: 'Month Expenses',
-      version: 'Version',
-      offlineMode: 'Offline Mode'
-    },
+      sidebar: {
+        dashboard: 'Dashboard',
+        newOrder: 'New Order',
+        orders: 'Orders',
+        orderTracking: 'Order Tracking',
+        addressBook: 'Address Book',
+        expenses: 'Expenses',
+        settings: 'Settings',
+        tagline: 'Laundry Management',
+        todayOverview: "Today's Overview",
+        todayRevenue: 'Today Revenue',
+        pendingOrders: 'Pending Orders',
+        monthProfit: 'Month Profit',
+        monthExpenses: 'Month Expenses',
+        version: 'Version',
+        offlineMode: 'Offline Mode'
+      },
 
       // Dashboard
       dashboard: {
@@ -119,6 +120,35 @@ const resources = {
         }
       },
 
+      // Address Book
+      addressBook: {
+        title: 'Address Book',
+        subtitle: 'Manage your customer contacts',
+        addCustomer: 'Add Customer',
+        editCustomer: 'Edit Customer',
+        deleteCustomer: 'Delete Customer',
+        firstName: 'First Name',
+        lastName: 'Last Name',
+        phone: 'Phone',
+        firstNamePlaceholder: 'Enter first name',
+        lastNamePlaceholder: 'Enter last name',
+        phonePlaceholder: 'Enter phone number',
+        searchPlaceholder: 'Search customers...',
+        save: 'Save',
+        cancel: 'Cancel',
+        noCustomers: 'No customers found',
+        noSearchResults: 'No customers match your search',
+        customerAdded: 'Customer added successfully!',
+        customerUpdated: 'Customer updated successfully!',
+        customerDeleted: 'Customer deleted successfully!',
+        confirmDelete: 'Are you sure you want to delete this customer?',
+        fillRequiredFields: 'Please fill in all required fields',
+        errorLoading: 'Error loading customers',
+        errorCreating: 'Error creating customer',
+        errorUpdating: 'Error updating customer',
+        errorDeleting: 'Error deleting customer'
+      },
+
       // Settings
       settings: {
         title: 'Settings',
@@ -188,6 +218,8 @@ const resources = {
         dashboard: 'Tableau de bord',
         newOrder: 'Nouvelle commande',
         orders: 'Commandes',
+        orderTracking: 'Suivi des commandes',
+        addressBook: 'Carnet d\'adresses',
         expenses: 'Dépenses',
         settings: 'Paramètres',
         tagline: 'Gestion de Blanchisserie',
@@ -292,6 +324,35 @@ const resources = {
           supplies: 'Fournitures',
           other: 'Autre'
         }
+      },
+
+      // Address Book
+      addressBook: {
+        title: 'Carnet d\'adresses',
+        subtitle: 'Gérez vos contacts clients',
+        addCustomer: 'Ajouter un client',
+        editCustomer: 'Modifier le client',
+        deleteCustomer: 'Supprimer le client',
+        firstName: 'Prénom',
+        lastName: 'Nom',
+        phone: 'Téléphone',
+        firstNamePlaceholder: 'Entrez le prénom',
+        lastNamePlaceholder: 'Entrez le nom',
+        phonePlaceholder: 'Entrez le numéro de téléphone',
+        searchPlaceholder: 'Rechercher des clients...',
+        save: 'Enregistrer',
+        cancel: 'Annuler',
+        noCustomers: 'Aucun client trouvé',
+        noSearchResults: 'Aucun client ne correspond à votre recherche',
+        customerAdded: 'Client ajouté avec succès !',
+        customerUpdated: 'Client mis à jour avec succès !',
+        customerDeleted: 'Client supprimé avec succès !',
+        confirmDelete: 'Êtes-vous sûr de vouloir supprimer ce client ?',
+        fillRequiredFields: 'Veuillez remplir tous les champs requis',
+        errorLoading: 'Erreur lors du chargement des clients',
+        errorCreating: 'Erreur lors de la création du client',
+        errorUpdating: 'Erreur lors de la mise à jour du client',
+        errorDeleting: 'Erreur lors de la suppression du client'
       },
 
       // Settings

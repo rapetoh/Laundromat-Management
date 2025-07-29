@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { FiHome, FiPlusCircle, FiList, FiDollarSign, FiSettings, FiTrendingUp, FiTrendingDown, FiClock, FiCheckCircle, FiGlobe } from 'react-icons/fi';
+import { FiHome, FiPlusCircle, FiList, FiDollarSign, FiSettings, FiTrendingUp, FiTrendingDown, FiClock, FiCheckCircle, FiGlobe, FiUsers, FiSearch } from 'react-icons/fi';
 import { formatCurrency } from '../utils/formatters';
 
 const Sidebar = ({ stats, onLanguageToggle }) => {
@@ -11,7 +11,8 @@ const Sidebar = ({ stats, onLanguageToggle }) => {
     { path: '/dashboard', name: t('sidebar.dashboard'), icon: FiHome },
     { path: '/new-order', name: t('sidebar.newOrder'), icon: FiPlusCircle },
     { path: '/orders', name: t('sidebar.orders'), icon: FiList },
-    { path: '/order-tracking', name: t('sidebar.orderTracking'), icon: FiClock },
+    { path: '/order-tracking', name: t('sidebar.orderTracking'), icon: FiSearch },
+    { path: '/address-book', name: t('sidebar.addressBook'), icon: FiUsers },
     { path: '/expenses', name: t('sidebar.expenses'), icon: FiDollarSign },
     { path: '/settings', name: t('sidebar.settings'), icon: FiSettings }
   ];

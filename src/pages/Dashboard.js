@@ -35,7 +35,7 @@ const Dashboard = ({ stats, onStatsUpdate }) => {
   const handleStatusUpdate = async (orderId, newStatus) => {
     try {
       await window.electronAPI.updateOrderStatus(orderId, newStatus);
-      toast.success(t('dashboard.orders.statusUpdated'));
+              toast.success(t('orders.statusUpdated'));
       loadRecentOrders();
       onStatsUpdate();
     } catch (error) {

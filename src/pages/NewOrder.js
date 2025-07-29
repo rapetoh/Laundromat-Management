@@ -10,12 +10,15 @@ const NewOrder = ({ onOrderCreated }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [itemTypes, setItemTypes] = useState([]);
+  const [customers, setCustomers] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [pickupDate, setPickupDate] = useState(getPickupDate());
   const [showReceipt, setShowReceipt] = useState(false);
   const [createdOrder, setCreatedOrder] = useState(null);
+  const [showCustomerSuggestions, setShowCustomerSuggestions] = useState(false);
+  const [filteredCustomers, setFilteredCustomers] = useState([]);
 
   useEffect(() => {
     console.log('NewOrder component mounted');
@@ -28,6 +31,21 @@ const NewOrder = ({ onOrderCreated }) => {
       }
     }
     loadItemTypes();
+    loadCustomers();
+  }, []);
+
+  // Close customer suggestions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.customer-suggestions')) {
+        setShowCustomerSuggestions(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
 
   const loadItemTypes = async () => {
@@ -47,6 +65,45 @@ const NewOrder = ({ onOrderCreated }) => {
       console.error('Error loading item types:', error);
       toast.error('Error loading item types: ' + error.message);
     }
+  };
+
+  const loadCustomers = async () => {
+    try {
+      const response = await window.electronAPI.getCustomers();
+      if (response && response.success && response.data) {
+        setCustomers(response.data);
+      } else {
+        console.error('Invalid customers response:', response);
+        setCustomers([]);
+      }
+    } catch (error) {
+      console.error('Error loading customers:', error);
+      setCustomers([]);
+    }
+  };
+
+  const handleCustomerNameChange = (value) => {
+    setCustomerName(value);
+    
+    if (value.trim()) {
+      const filtered = customers.filter(customer =>
+        customer.first_name.toLowerCase().includes(value.toLowerCase()) ||
+        customer.last_name.toLowerCase().includes(value.toLowerCase()) ||
+        `${customer.first_name} ${customer.last_name}`.toLowerCase().includes(value.toLowerCase())
+      );
+      setFilteredCustomers(filtered);
+      setShowCustomerSuggestions(filtered.length > 0);
+    } else {
+      setFilteredCustomers([]);
+      setShowCustomerSuggestions(false);
+    }
+  };
+
+  const selectCustomer = (customer) => {
+    setCustomerName(`${customer.first_name} ${customer.last_name}`);
+    setCustomerPhone(customer.phone);
+    setShowCustomerSuggestions(false);
+    setFilteredCustomers([]);
   };
 
   const addItem = (itemType) => {
@@ -100,6 +157,38 @@ const NewOrder = ({ onOrderCreated }) => {
     }
 
     try {
+      // Check if customer already exists, if not, add them to Address Book
+      const existingCustomer = customers.find(customer =>
+        customer.phone === customerPhone.trim() ||
+        (customer.first_name + ' ' + customer.last_name).toLowerCase() === customerName.toLowerCase().trim()
+      );
+
+      if (!existingCustomer) {
+        // Add new customer to Address Book
+        const nameParts = customerName.trim().split(' ');
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || firstName;
+        
+        const customerData = {
+          first_name: firstName,
+          last_name: lastName,
+          phone: customerPhone.trim()
+        };
+
+        try {
+          const customerResponse = await window.electronAPI.createCustomer(customerData);
+          if (customerResponse && customerResponse.success) {
+            console.log('New customer added to Address Book');
+            await loadCustomers(); // Reload customers list
+          } else {
+            console.error('Error adding customer to Address Book:', customerResponse);
+          }
+        } catch (error) {
+          console.error('Error adding customer to Address Book:', error);
+          // Continue with order creation even if customer addition fails
+        }
+      }
+
       const orderData = {
         customer_name: customerName,
         customer_phone: customerPhone,
@@ -259,10 +348,23 @@ const NewOrder = ({ onOrderCreated }) => {
                 <input
                   type="text"
                   value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
+                  onChange={(e) => handleCustomerNameChange(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   placeholder="Enter customer name"
                 />
+                {showCustomerSuggestions && filteredCustomers.length > 0 && (
+                  <div className="mt-2 bg-white border border-gray-200 rounded-lg shadow-sm max-h-60 overflow-y-auto customer-suggestions">
+                    {filteredCustomers.map((customer) => (
+                      <div
+                        key={customer.id}
+                        className="p-2 cursor-pointer hover:bg-gray-100"
+                        onClick={() => selectCustomer(customer)}
+                      >
+                        {customer.first_name} {customer.last_name} ({customer.phone})
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               
               <div>

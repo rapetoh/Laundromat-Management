@@ -59,17 +59,24 @@ const Settings = () => {
       const itemData = {
         name: itemFormData.name.trim(),
         category: itemFormData.category,
-        price: parseFloat(itemFormData.price),
-        created_at: new Date().toISOString()
+        price: parseFloat(itemFormData.price)
       };
 
-      await window.electronAPI.createItemType(itemData);
-      toast.success(editingItem ? t('settings.itemUpdated') : t('settings.itemAdded'));
+      if (editingItem) {
+        // Update existing item
+        await window.electronAPI.updateItemType(editingItem.id, itemData);
+        toast.success(t('settings.itemUpdated'));
+      } else {
+        // Create new item
+        await window.electronAPI.createItemType(itemData);
+        toast.success(t('settings.itemAdded'));
+      }
+      
       resetItemForm();
       loadItemTypes();
     } catch (error) {
-      console.error('Error creating item type:', error);
-      toast.error('Error creating item type');
+      console.error('Error saving item type:', error);
+      toast.error(editingItem ? 'Error updating item type' : 'Error creating item type');
     }
   };
 
@@ -91,13 +98,22 @@ const Settings = () => {
       price: item.price.toString()
     });
     setShowItemForm(true);
+    
+    // Auto-scroll to the form after a short delay to ensure it's rendered
+    setTimeout(() => {
+      const formElement = document.querySelector('.item-form-container');
+      if (formElement) {
+        formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
   };
 
   const handleDeleteItem = async (itemId) => {
     if (window.confirm('Are you sure you want to delete this item type?')) {
       try {
-        // Note: Delete functionality not implemented in backend yet
-        toast.error('Delete functionality not implemented yet');
+        await window.electronAPI.deleteItemType(itemId);
+        toast.success(t('settings.itemDeleted'));
+        loadItemTypes();
       } catch (error) {
         console.error('Error deleting item type:', error);
         toast.error('Error deleting item type');
@@ -204,7 +220,7 @@ const Settings = () => {
 
           {/* Add/Edit Item Form */}
           {showItemForm && (
-            <div className="p-6 border-t border-gray-200">
+            <div className="p-6 border-t border-gray-200 item-form-container">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">
                   {editingItem ? t('settings.editItemType') : t('settings.addItemType')}

@@ -7,11 +7,12 @@ const Receipt = ({ order }) => {
   const items = Array.isArray(order.items) ? order.items : JSON.parse(order.items || '[]');
 
   return (
-    <div className="receipt-container bg-white border border-gray-200 rounded-lg p-6 max-w-md mx-auto print:border-none print:shadow-none">
+    <div className="receipt-container bg-white border border-gray-200 rounded-lg p-8 max-w-lg mx-auto print:border-none print:shadow-none print:p-4 print:max-w-none">
       {/* Header */}
-      <div className="text-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">{t('receipt.title')}</h1>
-        <div className="w-16 h-1 bg-primary-600 mx-auto"></div>
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-3">{t('receipt.title')}</h1>
+        <div className="w-20 h-2 bg-primary-600 mx-auto mb-4"></div>
+        <p className="text-sm text-gray-600">Professional Laundry Service</p>
       </div>
 
       {/* Order Info */}
