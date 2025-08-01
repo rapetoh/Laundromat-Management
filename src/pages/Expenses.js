@@ -11,7 +11,9 @@ const Expenses = ({ onExpenseCreated }) => {
   const [showForm, setShowForm] = useState(false);
   const [editingExpense, setEditingExpense] = useState(null);
   const [categoryFilter, setCategoryFilter] = useState('all');
-  const [dateFilter, setDateFilter] = useState('');
+  const [yearFilter, setYearFilter] = useState('');
+  const [monthFilter, setMonthFilter] = useState('');
+  const [dayFilter, setDayFilter] = useState('');
 
   const [formData, setFormData] = useState({
     category: '',
@@ -30,13 +32,44 @@ const Expenses = ({ onExpenseCreated }) => {
     { value: 'other', label: t('expenses.categories.other') }
   ];
 
+  // Generate filter options
+  const getYearOptions = () => {
+    const years = [...new Set(expenses.map(expense => new Date(expense.date).getFullYear()))];
+    return years.sort((a, b) => b - a); // Most recent first
+  };
+
+  const getMonthOptions = () => {
+    if (!yearFilter) return [];
+    const months = [...new Set(expenses
+      .filter(expense => new Date(expense.date).getFullYear().toString() === yearFilter)
+      .map(expense => new Date(expense.date).getMonth() + 1))];
+    return months.sort((a, b) => a - b);
+  };
+
+  const getDayOptions = () => {
+    if (!yearFilter || !monthFilter) return [];
+    const days = [...new Set(expenses
+      .filter(expense => {
+        const expenseDate = new Date(expense.date);
+        return expenseDate.getFullYear().toString() === yearFilter && 
+               (expenseDate.getMonth() + 1).toString().padStart(2, '0') === monthFilter;
+      })
+      .map(expense => new Date(expense.date).getDate()))];
+    return days.sort((a, b) => a - b);
+  };
+
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+
   useEffect(() => {
     loadExpenses();
   }, []);
 
   useEffect(() => {
     filterExpenses();
-  }, [expenses, categoryFilter, dateFilter]);
+  }, [expenses, categoryFilter, yearFilter, monthFilter, dayFilter]);
 
   const loadExpenses = async () => {
     try {
@@ -62,9 +95,28 @@ const Expenses = ({ onExpenseCreated }) => {
       filtered = filtered.filter(expense => expense.category === categoryFilter);
     }
 
-    // Filter by date
-    if (dateFilter) {
-      filtered = filtered.filter(expense => expense.date === dateFilter);
+    // Filter by year
+    if (yearFilter) {
+      filtered = filtered.filter(expense => {
+        const expenseYear = new Date(expense.date).getFullYear().toString();
+        return expenseYear === yearFilter;
+      });
+    }
+
+    // Filter by month
+    if (monthFilter) {
+      filtered = filtered.filter(expense => {
+        const expenseMonth = (new Date(expense.date).getMonth() + 1).toString().padStart(2, '0');
+        return expenseMonth === monthFilter;
+      });
+    }
+
+    // Filter by day
+    if (dayFilter) {
+      filtered = filtered.filter(expense => {
+        const expenseDay = new Date(expense.date).getDate().toString().padStart(2, '0');
+        return expenseDay === dayFilter;
+      });
     }
 
     setFilteredExpenses(filtered);
@@ -196,14 +248,14 @@ const Expenses = ({ onExpenseCreated }) => {
 
       {/* Filters and Add Button */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
-          <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-4">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
             <div className="relative">
               <FiFilter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                className="pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm w-full"
               >
                 <option value="all">All Categories</option>
                 {expenseCategories.map((category) => (
@@ -214,24 +266,88 @@ const Expenses = ({ onExpenseCreated }) => {
               </select>
             </div>
 
+            {/* Year Filter */}
             <div className="relative">
               <FiCalendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <input
-                type="date"
-                value={dateFilter}
-                onChange={(e) => setDateFilter(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-              />
+              <select
+                value={yearFilter}
+                onChange={(e) => {
+                  setYearFilter(e.target.value);
+                  setMonthFilter(''); // Reset month when year changes
+                  setDayFilter(''); // Reset day when year changes
+                }}
+                className="pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 w-full"
+              >
+                <option value="">All Years</option>
+                {getYearOptions().map((year) => (
+                  <option key={year} value={year.toString()}>
+                    {year}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Month Filter */}
+            <div className="relative">
+              <FiCalendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <select
+                value={monthFilter}
+                onChange={(e) => {
+                  setMonthFilter(e.target.value);
+                  setDayFilter(''); // Reset day when month changes
+                }}
+                disabled={!yearFilter}
+                className="pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:bg-gray-100 disabled:cursor-not-allowed w-full"
+              >
+                <option value="">All Months</option>
+                {getMonthOptions().map((month) => (
+                  <option key={month} value={month.toString().padStart(2, '0')}>
+                    {monthNames[month - 1]}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Day Filter */}
+            <div className="relative">
+              <FiCalendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <select
+                value={dayFilter}
+                onChange={(e) => setDayFilter(e.target.value)}
+                disabled={!yearFilter || !monthFilter}
+                className="pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:bg-gray-100 disabled:cursor-not-allowed w-full"
+              >
+                <option value="">All Days</option>
+                {getDayOptions().map((day) => (
+                  <option key={day} value={day.toString().padStart(2, '0')}>
+                    {day}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
-          <button
-            onClick={() => setShowForm(true)}
-            className="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-          >
-            <FiPlus className="w-4 h-4" />
-            <span>{t('expenses.addExpense')}</span>
-          </button>
+          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 mt-4 lg:mt-0">
+            <button
+              onClick={() => {
+                setCategoryFilter('all');
+                setYearFilter('');
+                setMonthFilter('');
+                setDayFilter('');
+              }}
+              className="flex items-center justify-center space-x-2 px-4 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors w-full sm:w-auto"
+            >
+              <FiX className="w-4 h-4" />
+              <span>Clear Filters</span>
+            </button>
+            <button
+              onClick={() => setShowForm(true)}
+              className="flex items-center justify-center space-x-2 px-4 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors w-full sm:w-auto"
+            >
+              <FiPlus className="w-4 h-4" />
+              <span>{t('expenses.addExpense')}</span>
+            </button>
+          </div>
         </div>
       </div>
 

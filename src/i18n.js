@@ -7,6 +7,27 @@ const resources = {
       // General
       loading: 'Loading Pressia...',
       
+      // Login
+      login: {
+        tagline: 'Laundry Management System',
+        role: 'Role',
+        roles: {
+          employee: 'Employee',
+          manager: 'Manager',
+          admin: 'Administrator'
+        },
+        username: 'Username',
+        usernamePlaceholder: 'Enter your username',
+        password: 'Password',
+        passwordPlaceholder: 'Enter your password',
+        signIn: 'Sign In',
+        signingIn: 'Signing In...',
+        success: 'Login successful!',
+        invalidCredentials: 'Invalid username or password',
+        error: 'Login error. Please try again.',
+        demoCredentials: 'Demo Credentials:'
+      },
+      
       // Sidebar
       sidebar: {
         dashboard: 'Dashboard',
@@ -89,7 +110,33 @@ const resources = {
         noOrders: 'No orders found',
         viewReceipt: 'View Receipt',
         updateStatus: 'Update Status',
-        statusUpdated: 'Status updated successfully!'
+        statusUpdated: 'Status updated successfully!',
+        urgentOrders: 'Urgent Orders',
+        overdueOrders: 'Overdue Orders',
+        urgentOrdersDescription: 'These orders are due today or tomorrow!',
+        overdueOrdersDescription: 'These orders are overdue!',
+        dueToday: 'Due Today',
+        dueTomorrow: 'Due Tomorrow',
+        thisWeek: 'This Week',
+        orderFound: 'Order Found',
+        ordersFound: 'Orders Found',
+        orderTracking: 'Order Tracking',
+        orderTrackingDescription: 'Track orders by due dates and manage delivery schedules',
+        allStatuses: 'All Statuses',
+        allDates: 'All Dates',
+        overdue: 'Overdue',
+        created: 'Created',
+        pickup: 'Pickup',
+        description: 'Manage and track all laundry orders',
+        confirmStatusChange: 'Confirm Status Change',
+        confirmStatusChangeMessage: 'Are you sure you want to change the status of order #{orderId} to {status}?',
+        cancel: 'Cancel',
+        confirm: 'Confirm',
+        urgent: 'Urgent',
+        viewReceipt: 'View Receipt',
+        printReceipt: 'Print Receipt',
+        markCompleted: 'Mark as Completed',
+        markPickedUp: 'Mark as Picked Up'
       },
 
       // Expenses
@@ -213,6 +260,27 @@ const resources = {
       // General
       loading: 'Chargement de Pressia...',
       
+      // Login
+      login: {
+        tagline: 'Système de Gestion de Blanchisserie',
+        role: 'Rôle',
+        roles: {
+          employee: 'Employé',
+          manager: 'Gestionnaire',
+          admin: 'Administrateur'
+        },
+        username: 'Nom d\'utilisateur',
+        usernamePlaceholder: 'Entrez votre nom d\'utilisateur',
+        password: 'Mot de passe',
+        passwordPlaceholder: 'Entrez votre mot de passe',
+        signIn: 'Se connecter',
+        signingIn: 'Connexion en cours...',
+        success: 'Connexion réussie !',
+        invalidCredentials: 'Nom d\'utilisateur ou mot de passe incorrect',
+        error: 'Erreur de connexion. Veuillez réessayer.',
+        demoCredentials: 'Identifiants de démonstration :'
+      },
+      
       // Sidebar
       sidebar: {
         dashboard: 'Tableau de bord',
@@ -295,7 +363,33 @@ const resources = {
         noOrders: 'Aucune commande trouvée',
         viewReceipt: 'Voir le reçu',
         updateStatus: 'Mettre à jour le statut',
-        statusUpdated: 'Statut mis à jour avec succès !'
+        statusUpdated: 'Statut mis à jour avec succès !',
+        urgentOrders: 'Commandes urgentes',
+        overdueOrders: 'Commandes en retard',
+        urgentOrdersDescription: 'Ces commandes sont dues aujourd\'hui ou demain !',
+        overdueOrdersDescription: 'Ces commandes sont en retard !',
+        dueToday: 'Dû aujourd\'hui',
+        dueTomorrow: 'Dû demain',
+        thisWeek: 'Cette semaine',
+        orderFound: 'Commande trouvée',
+        ordersFound: 'Commandes trouvées',
+        orderTracking: 'Suivi des commandes',
+        orderTrackingDescription: 'Suivez les commandes par date d\'échéance et gérez les plannings de livraison',
+        allStatuses: 'Tous les statuts',
+        allDates: 'Toutes les dates',
+        overdue: 'En retard',
+        created: 'Créé',
+        pickup: 'Récupération',
+        description: 'Gérez et suivez toutes les commandes de blanchisserie',
+        confirmStatusChange: 'Confirmer le changement de statut',
+        confirmStatusChangeMessage: 'Êtes-vous sûr de vouloir changer le statut de la commande #{orderId} vers {status} ?',
+        cancel: 'Annuler',
+        confirm: 'Confirmer',
+        urgent: 'Urgent',
+        viewReceipt: 'Voir le reçu',
+        printReceipt: 'Imprimer le reçu',
+        markCompleted: 'Marquer comme terminé',
+        markPickedUp: 'Marquer comme récupéré'
       },
 
       // Expenses

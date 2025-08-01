@@ -10,39 +10,99 @@ console.log('ipcRenderer available:', !!ipcRenderer);
 // the ipcRenderer without exposing the entire object
 contextBridge.exposeInMainWorld('electronAPI', {
   // Database operations
-  getOrders: () => ipcRenderer.invoke('db-get-orders'),
-  createOrder: (orderData) => ipcRenderer.invoke('db-create-order', orderData),
-  updateOrderStatus: (orderId, status) => ipcRenderer.invoke('db-update-order-status', { orderId, status }),
+  getOrders: () => {
+    console.log('getOrders called from renderer');
+    return ipcRenderer.invoke('db-get-orders');
+  },
+  createOrder: (orderData) => {
+    console.log('createOrder called from renderer');
+    return ipcRenderer.invoke('db-create-order', orderData);
+  },
+  updateOrderStatus: (orderId, status) => {
+    console.log('updateOrderStatus called from renderer');
+    return ipcRenderer.invoke('db-update-order-status', { orderId, status });
+  },
   
-  getExpenses: () => ipcRenderer.invoke('db-get-expenses'),
-  createExpense: (expenseData) => ipcRenderer.invoke('db-create-expense', expenseData),
-  updateExpense: (expenseId, expenseData) => ipcRenderer.invoke('db-update-expense', expenseId, expenseData),
-  deleteExpense: (expenseId) => ipcRenderer.invoke('db-delete-expense', expenseId),
+  getExpenses: () => {
+    console.log('getExpenses called from renderer');
+    return ipcRenderer.invoke('db-get-expenses');
+  },
+  createExpense: (expenseData) => {
+    console.log('createExpense called from renderer');
+    return ipcRenderer.invoke('db-create-expense', expenseData);
+  },
+  updateExpense: (expenseId, expenseData) => {
+    console.log('updateExpense called from renderer');
+    return ipcRenderer.invoke('db-update-expense', expenseId, expenseData);
+  },
+  deleteExpense: (expenseId) => {
+    console.log('deleteExpense called from renderer');
+    return ipcRenderer.invoke('db-delete-expense', expenseId);
+  },
   
-  getItemTypes: () => ipcRenderer.invoke('db-get-item-types'),
-  createItemType: (itemData) => ipcRenderer.invoke('db-create-item-type', itemData),
-  updateItemType: (itemId, itemData) => ipcRenderer.invoke('db-update-item-type', itemId, itemData),
-  deleteItemType: (itemId) => ipcRenderer.invoke('db-delete-item-type', itemId),
+  getItemTypes: () => {
+    console.log('getItemTypes called from renderer');
+    return ipcRenderer.invoke('db-get-item-types');
+  },
+  createItemType: (itemData) => {
+    console.log('createItemType called from renderer');
+    return ipcRenderer.invoke('db-create-item-type', itemData);
+  },
+  updateItemType: (itemId, itemData) => {
+    console.log('updateItemType called from renderer');
+    return ipcRenderer.invoke('db-update-item-type', itemId, itemData);
+  },
+  deleteItemType: (itemId) => {
+    console.log('deleteItemType called from renderer');
+    return ipcRenderer.invoke('db-delete-item-type', itemId);
+  },
   
   // Customer operations
-  getCustomers: () => ipcRenderer.invoke('db-get-customers'),
-  createCustomer: (customerData) => ipcRenderer.invoke('db-create-customer', customerData),
-  updateCustomer: (customerId, customerData) => ipcRenderer.invoke('db-update-customer', customerId, customerData),
-  deleteCustomer: (customerId) => ipcRenderer.invoke('db-delete-customer', customerId),
-  searchCustomers: (searchTerm) => ipcRenderer.invoke('db-search-customers', searchTerm),
+  getCustomers: () => {
+    console.log('getCustomers called from renderer');
+    return ipcRenderer.invoke('db-get-customers');
+  },
+  createCustomer: (customerData) => {
+    console.log('createCustomer called from renderer');
+    return ipcRenderer.invoke('db-create-customer', customerData);
+  },
+  updateCustomer: (customerId, customerData) => {
+    console.log('updateCustomer called from renderer');
+    return ipcRenderer.invoke('db-update-customer', customerId, customerData);
+  },
+  deleteCustomer: (customerId) => {
+    console.log('deleteCustomer called from renderer');
+    return ipcRenderer.invoke('db-delete-customer', customerId);
+  },
+  searchCustomers: (searchTerm) => {
+    console.log('searchCustomers called from renderer');
+    return ipcRenderer.invoke('db-search-customers', searchTerm);
+  },
   
-  getDashboardStats: () => ipcRenderer.invoke('db-get-dashboard-stats'),
+  getDashboardStats: () => {
+    console.log('getDashboardStats called from renderer');
+    return ipcRenderer.invoke('db-get-dashboard-stats');
+  },
   
   // File operations
-  exportDatabase: () => ipcRenderer.invoke('export-database'),
-  importDatabase: () => ipcRenderer.invoke('import-database'),
+  exportDatabase: () => {
+    console.log('exportDatabase called from renderer');
+    return ipcRenderer.invoke('export-database');
+  },
+  importDatabase: () => {
+    console.log('importDatabase called from renderer');
+    return ipcRenderer.invoke('import-database');
+  },
   
   // Platform info
   platform: process.platform,
   isDev: process.env.NODE_ENV === 'development',
   
   // Test method
-  test: () => 'preload script is working!'
+  test: () => {
+    console.log('test method called from renderer');
+    return 'preload script is working!';
+  }
 });
 
 console.log('electronAPI exposed to renderer process'); 

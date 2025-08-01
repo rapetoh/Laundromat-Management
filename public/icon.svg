@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="128" cy="128" r="120" fill="#4F46E5"/>
+  
+  <!-- Laundry basket -->
+  <path d="M80 140 L176 140 L172 180 L84 180 Z" fill="white" stroke="#1F2937" stroke-width="2"/>
+  
+  <!-- Basket handle -->
+  <path d="M90 140 Q128 120 166 140" fill="none" stroke="white" stroke-width="4"/>
+  
+  <!-- Shirt icon -->
+  <path d="M110 160 L146 160 L150 180 L106 180 Z" fill="#F3F4F6"/>
+  <path d="M118 160 L138 160 L140 170 L116 170 Z" fill="#E5E7EB"/>
+  
+  <!-- Text "P" for Pressia -->
+  <text x="128" y="100" font-family="Arial, sans-serif" font-size="48" font-weight="bold" text-anchor="middle" fill="white">P</text>
+</svg> 

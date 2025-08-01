@@ -271,7 +271,7 @@ const OrderTracking = ({ onOrderUpdated }) => {
         <div className="max-w-2xl mx-auto">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">View Receipt</h2>
+              <h2 className="text-2xl font-bold text-gray-900">{t('orders.viewReceipt')}</h2>
               <button
                 onClick={() => setShowReceipt(false)}
                 className="p-2 text-gray-500 hover:text-gray-700"
@@ -290,8 +290,8 @@ const OrderTracking = ({ onOrderUpdated }) => {
     <div className="p-6">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Order Tracking</h1>
-        <p className="text-gray-600">Track orders by due dates and manage delivery schedules</p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('orders.orderTracking')}</h1>
+        <p className="text-gray-600">{t('orders.orderTrackingDescription')}</p>
       </div>
 
       {/* Summary Cards */}
@@ -299,7 +299,7 @@ const OrderTracking = ({ onOrderUpdated }) => {
         <div className="bg-red-50 border border-red-200 rounded-lg p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-red-600">Overdue Orders</p>
+              <p className="text-sm font-medium text-red-600">{t('orders.overdueOrders')}</p>
               <p className="text-2xl font-bold text-red-900">
                 {orders.filter(order => new Date(order.pickup_date) < new Date() && order.status === 'pending').length}
               </p>
@@ -311,7 +311,7 @@ const OrderTracking = ({ onOrderUpdated }) => {
         <div className="bg-orange-50 border border-orange-200 rounded-lg p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-orange-600">Due Today</p>
+              <p className="text-sm font-medium text-orange-600">{t('orders.dueToday')}</p>
               <p className="text-2xl font-bold text-orange-900">
                 {orders.filter(order => 
                   new Date(order.pickup_date).toDateString() === new Date().toDateString() && 
@@ -326,7 +326,7 @@ const OrderTracking = ({ onOrderUpdated }) => {
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-yellow-600">Due Tomorrow</p>
+              <p className="text-sm font-medium text-yellow-600">{t('orders.dueTomorrow')}</p>
               <p className="text-2xl font-bold text-yellow-900">
                 {orders.filter(order => 
                   new Date(order.pickup_date).toDateString() === new Date(new Date().getTime() + 24 * 60 * 60 * 1000).toDateString() && 
@@ -341,7 +341,7 @@ const OrderTracking = ({ onOrderUpdated }) => {
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-blue-600">This Week</p>
+              <p className="text-sm font-medium text-blue-600">{t('orders.thisWeek')}</p>
               <p className="text-2xl font-bold text-blue-900">
                 {orders.filter(order => {
                   const today = new Date();
@@ -364,7 +364,7 @@ const OrderTracking = ({ onOrderUpdated }) => {
             <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <input
               type="text"
-              placeholder="Search orders..."
+              placeholder={t('orders.search')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
@@ -415,7 +415,7 @@ const OrderTracking = ({ onOrderUpdated }) => {
           {filteredOrders.length === 0 ? (
             <div className="text-center py-8">
               <FiPackage className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">No orders found matching your criteria</p>
+              <p className="text-gray-500">{t('orders.noOrders')}</p>
             </div>
           ) : (
             <div className="space-y-4">

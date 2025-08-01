@@ -90,6 +90,23 @@ const Settings = () => {
     setEditingItem(null);
   };
 
+  const scrollToForm = () => {
+    setTimeout(() => {
+      const formContainer = document.querySelector('.item-form-container');
+      if (formContainer) {
+        formContainer.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        });
+      }
+    }, 100); // Small delay to ensure the form is rendered
+  };
+
+  const handleAddItemType = () => {
+    setShowItemForm(true);
+    scrollToForm();
+  };
+
   const handleEditItem = (item) => {
     setEditingItem(item);
     setItemFormData({
@@ -98,14 +115,7 @@ const Settings = () => {
       price: item.price.toString()
     });
     setShowItemForm(true);
-    
-    // Auto-scroll to the form after a short delay to ensure it's rendered
-    setTimeout(() => {
-      const formElement = document.querySelector('.item-form-container');
-      if (formElement) {
-        formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }, 100);
+    scrollToForm();
   };
 
   const handleDeleteItem = async (itemId) => {
@@ -163,7 +173,7 @@ const Settings = () => {
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-semibold text-gray-900">{t('settings.itemTypes')}</h2>
               <button
-                onClick={() => setShowItemForm(true)}
+                onClick={handleAddItemType}
                 className="flex items-center space-x-2 px-3 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
               >
                 <FiPlus className="w-4 h-4" />

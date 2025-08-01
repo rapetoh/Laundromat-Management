@@ -29,7 +29,6 @@
     "react-icons": "^4.8.0",
     "react-router-dom": "^6.8.0",
     "react-scripts": "^5.0.1",
-    "sqlite3": "^5.1.6",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
@@ -52,13 +51,23 @@
       "build/**/*",
       "node_modules/**/*",
       "public/electron.js",
-      "public/preload.js"
+      "public/preload.js",
+      "public/index.html",
+      "public/icon.ico"
+    ],
+    "extraResources": [
+      {
+        "from": "public/icon.ico",
+        "to": "icon.ico"
+      }
     ],
     "win": {
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "icon": "public/icon.ico",
@@ -69,7 +78,10 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Pressia Laundry Management"
+      "shortcutName": "Pressia Laundry Management",
+      "installerIcon": "public/icon.ico",
+      "uninstallerIcon": "public/icon.ico",
+      "installerHeaderIcon": "public/icon.ico"
     }
   },
   "browserslist": {
@@ -85,4 +97,3 @@
     ]
   }
 }
- 

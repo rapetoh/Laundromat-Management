@@ -11,85 +11,100 @@ let db;
 
 // Database initialization
 function initializeDatabase() {
-  const dbPath = path.join(app.getPath('userData'), 'pressia.db');
-  db = new Database(dbPath);
-  
-  // Create tables if they don't exist
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS orders (
-      id TEXT PRIMARY KEY,
-      customer_name TEXT NOT NULL,
-      customer_phone TEXT,
-      items TEXT NOT NULL,
-      total_amount REAL NOT NULL,
-      pickup_date TEXT NOT NULL,
-      status TEXT DEFAULT 'pending',
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
-    );
-
-    CREATE TABLE IF NOT EXISTS expenses (
-      id TEXT PRIMARY KEY,
-      description TEXT NOT NULL,
-      amount REAL NOT NULL,
-      category TEXT NOT NULL,
-      date TEXT NOT NULL,
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP
-    );
-
-    CREATE TABLE IF NOT EXISTS item_types (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      price REAL NOT NULL,
-      category TEXT NOT NULL,
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP
-    );
-
-    CREATE TABLE IF NOT EXISTS customers (
-      id TEXT PRIMARY KEY,
-      first_name TEXT NOT NULL,
-      last_name TEXT NOT NULL,
-      phone TEXT NOT NULL,
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP
-    );
-
-    CREATE TABLE IF NOT EXISTS settings (
-      key TEXT PRIMARY KEY,
-      value TEXT NOT NULL,
-      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
-    );
-  `);
-
-  // Insert default item types if table is empty
-  const itemCount = db.prepare('SELECT COUNT(*) as count FROM item_types').get();
-  if (itemCount.count === 0) {
-    const defaultItems = [
-      { name: 'Chemise Homme', price: 500, category: 'Vêtements Homme' },
-      { name: 'Pantalon Homme', price: 600, category: 'Vêtements Homme' },
-      { name: 'Costume', price: 1200, category: 'Vêtements Homme' },
-      { name: 'Robe', price: 800, category: 'Vêtements Femme' },
-      { name: 'Jupe', price: 500, category: 'Vêtements Femme' },
-      { name: 'Blouse', price: 400, category: 'Vêtements Femme' },
-      { name: 'T-shirt', price: 300, category: 'Vêtements Général' },
-      { name: 'Jeans', price: 700, category: 'Vêtements Général' },
-      { name: 'Drap de lit', price: 800, category: 'Linge de maison' },
-      { name: 'Serviette', price: 400, category: 'Linge de maison' },
-      { name: 'Nappe', price: 600, category: 'Linge de maison' }
-    ];
-
-    const insertItem = db.prepare(`
-      INSERT INTO item_types (id, name, price, category) 
-      VALUES (?, ?, ?, ?)
-    `);
-
-    defaultItems.forEach(item => {
-      insertItem.run(
-        require('crypto').randomUUID(),
-        item.name,
-        item.price,
-        item.category
+  try {
+    console.log('Starting database initialization...');
+    const dbPath = path.join(app.getPath('userData'), 'pressia.db');
+    console.log('Database path:', dbPath);
+    
+    db = new Database(dbPath);
+    console.log('Database connection established');
+    
+    // Create tables if they don't exist
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS orders (
+        id TEXT PRIMARY KEY,
+        customer_name TEXT NOT NULL,
+        customer_phone TEXT,
+        items TEXT NOT NULL,
+        total_amount REAL NOT NULL,
+        pickup_date TEXT NOT NULL,
+        status TEXT DEFAULT 'pending',
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
       );
-    });
+
+      CREATE TABLE IF NOT EXISTS expenses (
+        id TEXT PRIMARY KEY,
+        description TEXT NOT NULL,
+        amount REAL NOT NULL,
+        category TEXT NOT NULL,
+        date TEXT NOT NULL,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS item_types (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        price REAL NOT NULL,
+        category TEXT NOT NULL,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS customers (
+        id TEXT PRIMARY KEY,
+        first_name TEXT NOT NULL,
+        last_name TEXT NOT NULL,
+        phone TEXT NOT NULL,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS settings (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    console.log('Database tables created/verified');
+
+    // Insert default item types if table is empty
+    const itemCount = db.prepare('SELECT COUNT(*) as count FROM item_types').get();
+    console.log('Current item types count:', itemCount.count);
+    
+    if (itemCount.count === 0) {
+      console.log('Adding default item types...');
+      const defaultItems = [
+        { name: 'Chemise Homme', price: 500, category: 'Vêtements Homme' },
+        { name: 'Pantalon Homme', price: 600, category: 'Vêtements Homme' },
+        { name: 'Costume', price: 1200, category: 'Vêtements Homme' },
+        { name: 'Robe', price: 800, category: 'Vêtements Femme' },
+        { name: 'Jupe', price: 500, category: 'Vêtements Femme' },
+        { name: 'Blouse', price: 400, category: 'Vêtements Femme' },
+        { name: 'T-shirt', price: 300, category: 'Vêtements Général' },
+        { name: 'Jeans', price: 700, category: 'Vêtements Général' },
+        { name: 'Drap de lit', price: 800, category: 'Linge de maison' },
+        { name: 'Serviette', price: 400, category: 'Linge de maison' },
+        { name: 'Nappe', price: 600, category: 'Linge de maison' }
+      ];
+
+      const insertItem = db.prepare(`
+        INSERT INTO item_types (id, name, price, category) 
+        VALUES (?, ?, ?, ?)
+      `);
+
+      defaultItems.forEach(item => {
+        insertItem.run(
+          require('crypto').randomUUID(),
+          item.name,
+          item.price,
+          item.category
+        );
+      });
+      console.log('Default item types added');
+    }
+    
+    console.log('Database initialization completed successfully');
+  } catch (error) {
+    console.error('Database initialization failed:', error);
   }
 }
 
@@ -110,9 +125,14 @@ function createWindow() {
       enableRemoteModule: false,
       preload: preloadPath
     },
-    icon: path.join(__dirname, 'icon.png'),
+    icon: path.join(__dirname, 'icon.ico'),
     title: 'Pressia - Gestion de Blanchisserie',
-    show: false
+    show: false,
+    autoHideMenuBar: true,
+    frame: true,
+    resizable: true,
+    maximizable: true,
+    minimizable: true
   });
 
   // Load the app
@@ -158,10 +178,17 @@ app.on('window-all-closed', () => {
 
 // IPC handlers for database operations
 ipcMain.handle('db-get-orders', async () => {
+  console.log('IPC: db-get-orders called');
   try {
+    if (!db) {
+      console.error('Database not initialized');
+      return { success: false, error: 'Database not initialized' };
+    }
     const orders = db.prepare('SELECT * FROM orders ORDER BY created_at DESC').all();
+    console.log('IPC: db-get-orders returned', orders.length, 'orders');
     return { success: true, data: orders };
   } catch (error) {
+    console.error('IPC: db-get-orders error:', error);
     return { success: false, error: error.message };
   }
 });
@@ -209,10 +236,17 @@ ipcMain.handle('db-update-order-status', async (event, { orderId, status }) => {
 });
 
 ipcMain.handle('db-get-expenses', async () => {
+  console.log('IPC: db-get-expenses called');
   try {
+    if (!db) {
+      console.error('Database not initialized');
+      return { success: false, error: 'Database not initialized' };
+    }
     const expenses = db.prepare('SELECT * FROM expenses ORDER BY date DESC').all();
+    console.log('IPC: db-get-expenses returned', expenses.length, 'expenses');
     return { success: true, data: expenses };
   } catch (error) {
+    console.error('IPC: db-get-expenses error:', error);
     return { success: false, error: error.message };
   }
 });
@@ -273,10 +307,17 @@ ipcMain.handle('db-delete-expense', async (event, expenseId) => {
 });
 
 ipcMain.handle('db-get-item-types', async () => {
+  console.log('IPC: db-get-item-types called');
   try {
-    const items = db.prepare('SELECT * FROM item_types ORDER BY category, name').all();
+    if (!db) {
+      console.error('Database not initialized');
+      return { success: false, error: 'Database not initialized' };
+    }
+    const items = db.prepare('SELECT * FROM item_types ORDER BY name').all();
+    console.log('IPC: db-get-item-types returned', items.length, 'items');
     return { success: true, data: items };
   } catch (error) {
+    console.error('IPC: db-get-item-types error:', error);
     return { success: false, error: error.message };
   }
 });
@@ -336,10 +377,17 @@ ipcMain.handle('db-delete-item-type', async (event, itemId) => {
 
 // Customer operations
 ipcMain.handle('db-get-customers', async () => {
+  console.log('IPC: db-get-customers called');
   try {
+    if (!db) {
+      console.error('Database not initialized');
+      return { success: false, error: 'Database not initialized' };
+    }
     const customers = db.prepare('SELECT * FROM customers ORDER BY first_name, last_name').all();
+    console.log('IPC: db-get-customers returned', customers.length, 'customers');
     return { success: true, data: customers };
   } catch (error) {
+    console.error('IPC: db-get-customers error:', error);
     return { success: false, error: error.message };
   }
 });

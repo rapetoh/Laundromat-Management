@@ -216,7 +216,7 @@ const Orders = ({ onOrderUpdated }) => {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('orders.title')}</h1>
-        <p className="text-gray-600">Manage and track all laundry orders</p>
+        <p className="text-gray-600">{t('orders.description')}</p>
       </div>
 
       {/* Alerts Section */}
@@ -226,9 +226,9 @@ const Orders = ({ onOrderUpdated }) => {
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
               <div className="flex items-center">
                 <FiAlertTriangle className="w-5 h-5 text-red-600 mr-2" />
-                <h3 className="text-red-800 font-semibold">Overdue Orders ({overdueOrders.length})</h3>
+                <h3 className="text-red-800 font-semibold">{t('orders.overdueOrders')} ({overdueOrders.length})</h3>
               </div>
-              <p className="text-red-700 text-sm mt-1">These orders are past their pickup date!</p>
+              <p className="text-red-700 text-sm mt-1">{t('orders.overdueOrdersDescription')}</p>
             </div>
           )}
           
@@ -236,9 +236,9 @@ const Orders = ({ onOrderUpdated }) => {
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
               <div className="flex items-center">
                 <FiClock className="w-5 h-5 text-yellow-600 mr-2" />
-                <h3 className="text-yellow-800 font-semibold">Urgent Orders ({urgentOrders.length})</h3>
+                <h3 className="text-yellow-800 font-semibold">{t('orders.urgentOrders')} ({urgentOrders.length})</h3>
               </div>
-              <p className="text-yellow-700 text-sm mt-1">These orders are due today or tomorrow!</p>
+              <p className="text-yellow-700 text-sm mt-1">{t('orders.urgentOrdersDescription')}</p>
             </div>
           )}
         </div>
@@ -279,7 +279,7 @@ const Orders = ({ onOrderUpdated }) => {
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="p-6 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-900">
-            {filteredOrders.length} {filteredOrders.length === 1 ? 'Order' : 'Orders'} Found
+            {filteredOrders.length} {filteredOrders.length === 1 ? t('orders.orderFound') : t('orders.ordersFound')}
           </h2>
         </div>
         
@@ -309,13 +309,13 @@ const Orders = ({ onOrderUpdated }) => {
                       <div>
                         <div className="flex items-center space-x-2">
                           <h3 className="font-medium text-gray-900">{order.customer_name}</h3>
-                          {isOverdue && <FiAlertTriangle className="w-4 h-4 text-red-600" title="Overdue" />}
-                          {isUrgent && <FiClock className="w-4 h-4 text-yellow-600" title="Urgent" />}
+                          {isOverdue && <FiAlertTriangle className="w-4 h-4 text-red-600" title={t('orders.overdue')} />}
+                          {isUrgent && <FiClock className="w-4 h-4 text-yellow-600" title={t('orders.urgent')} />}
                         </div>
                         <p className="text-sm text-gray-500">{order.customer_phone}</p>
-                        <p className="text-sm text-gray-500">Created: {formatDateTime(order.created_at)}</p>
+                        <p className="text-sm text-gray-500">{t('orders.created')}: {formatDateTime(order.created_at)}</p>
                         <p className={`text-sm ${isOverdue ? 'text-red-600 font-medium' : 'text-gray-500'}`}>
-                          Pickup: {formatPickupDate(order.pickup_date)}
+                          {t('orders.pickup')}: {formatPickupDate(order.pickup_date)}
                         </p>
                       </div>
                     </div>
@@ -332,7 +332,7 @@ const Orders = ({ onOrderUpdated }) => {
                         <button
                           onClick={() => handleViewReceipt(order)}
                           className="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
-                          title="View Receipt"
+                          title={t('orders.viewReceipt')}
                         >
                           <FiEye className="w-4 h-4" />
                         </button>
@@ -340,7 +340,7 @@ const Orders = ({ onOrderUpdated }) => {
                         <button
                           onClick={() => handlePrintReceipt(order)}
                           className="p-2 text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition-colors"
-                          title="Print Receipt"
+                          title={t('orders.printReceipt')}
                         >
                           <FiPrinter className="w-4 h-4" />
                         </button>
@@ -349,7 +349,7 @@ const Orders = ({ onOrderUpdated }) => {
                           <button
                             onClick={() => handleStatusUpdate(order.id, 'completed')}
                             className="p-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-colors"
-                            title="Mark as Completed"
+                            title={t('orders.markCompleted')}
                           >
                             <FiCheck className="w-4 h-4" />
                           </button>
@@ -359,7 +359,7 @@ const Orders = ({ onOrderUpdated }) => {
                           <button
                             onClick={() => handleStatusUpdate(order.id, 'picked_up')}
                             className="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
-                            title="Mark as Picked Up"
+                            title={t('orders.markPickedUp')}
                           >
                             <FiPackage className="w-4 h-4" />
                           </button>
@@ -380,12 +380,14 @@ const Orders = ({ onOrderUpdated }) => {
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
             <div className="flex items-center mb-4">
               <FiCheckCircle className="w-6 h-6 text-blue-600 mr-3" />
-              <h3 className="text-lg font-semibold text-gray-900">Confirm Status Change</h3>
+              <h3 className="text-lg font-semibold text-gray-900">{t('orders.confirmStatusChange')}</h3>
             </div>
             
             <p className="text-gray-600 mb-6">
-              Are you sure you want to change the status of order #{pendingStatusChange.orderId} to{' '}
-              <span className="font-semibold">{formatOrderStatus(pendingStatusChange.newStatus)}</span>?
+              {t('orders.confirmStatusChangeMessage', { 
+                orderId: pendingStatusChange.orderId, 
+                status: formatOrderStatus(pendingStatusChange.newStatus) 
+              })}
             </p>
             
             <div className="flex space-x-3">
@@ -396,13 +398,14 @@ const Orders = ({ onOrderUpdated }) => {
                 }}
                 className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
               >
-                Cancel
+                {t('orders.cancel')}
               </button>
+              
               <button
                 onClick={confirmStatusUpdate}
                 className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
-                Confirm
+                {t('orders.confirm')}
               </button>
             </div>
           </div>

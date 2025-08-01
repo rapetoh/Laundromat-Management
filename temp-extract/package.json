@@ -1,0 +1,34 @@
+{
+  "name": "pressia-laundry-management",
+  "version": "1.0.0",
+  "description": "Offline-First Laundry Management System for French-speaking Africa",
+  "main": "build/electron.js",
+  "homepage": "./",
+  "dependencies": {
+    "better-sqlite3": "^8.6.0",
+    "date-fns": "^2.29.3",
+    "html2pdf.js": "^0.10.1",
+    "i18next": "^23.2.11",
+    "jspdf": "^2.5.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-hot-toast": "^2.4.0",
+    "react-i18next": "^13.2.2",
+    "react-icons": "^4.8.0",
+    "react-router-dom": "^6.8.0",
+    "react-scripts": "^5.0.1",
+    "uuid": "^9.0.0"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

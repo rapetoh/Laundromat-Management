@@ -10,18 +10,34 @@ const Dashboard = ({ stats, onStatsUpdate }) => {
   const [recentOrders, setRecentOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Ensure stats has default values
+  const safeStats = stats || {
+    todayRevenue: 0,
+    monthlyRevenue: 0,
+    monthlyExpenses: 0,
+    monthlyProfit: 0,
+    pendingOrders: 0
+  };
+
   useEffect(() => {
     loadRecentOrders();
   }, []);
 
   const loadRecentOrders = async () => {
     try {
+      // Check if electronAPI is available
+      if (!window.electronAPI) {
+        console.log('electronAPI not available, skipping recent orders load');
+        setRecentOrders([]);
+        setIsLoading(false);
+        return;
+      }
+
       const response = await window.electronAPI.getOrders();
       if (response && response.success && response.data) {
-        const recent = response.data.slice(0, 5); // Get last 5 orders
+        const recent = response.data.slice(0, 5);
         setRecentOrders(recent);
       } else {
-        console.error('Invalid orders response:', response);
         setRecentOrders([]);
       }
     } catch (error) {
@@ -34,8 +50,13 @@ const Dashboard = ({ stats, onStatsUpdate }) => {
 
   const handleStatusUpdate = async (orderId, newStatus) => {
     try {
+      if (!window.electronAPI) {
+        toast.error('Database not available');
+        return;
+      }
+      
       await window.electronAPI.updateOrderStatus(orderId, newStatus);
-              toast.success(t('orders.statusUpdated'));
+      toast.success(t('orders.statusUpdated'));
       loadRecentOrders();
       onStatsUpdate();
     } catch (error) {
@@ -62,28 +83,28 @@ const Dashboard = ({ stats, onStatsUpdate }) => {
   const statCards = [
     {
       title: t('dashboard.stats.todayRevenue'),
-      value: formatCurrency(stats.todayRevenue),
+      value: formatCurrency(safeStats.todayRevenue),
       icon: FiTrendingUp,
       color: 'text-green-600',
       bgColor: 'bg-green-50'
     },
     {
       title: t('dashboard.stats.monthlyRevenue'),
-      value: formatCurrency(stats.monthlyRevenue),
+      value: formatCurrency(safeStats.monthlyRevenue),
       icon: FiDollarSign,
       color: 'text-blue-600',
       bgColor: 'bg-blue-50'
     },
     {
       title: t('dashboard.stats.monthlyExpenses'),
-      value: formatCurrency(stats.monthlyExpenses),
+      value: formatCurrency(safeStats.monthlyExpenses),
       icon: FiTrendingDown,
       color: 'text-red-600',
       bgColor: 'bg-red-50'
     },
     {
       title: t('dashboard.stats.pendingOrders'),
-      value: stats.pendingOrders,
+      value: safeStats.pendingOrders,
       icon: FiClock,
       color: 'text-yellow-600',
       bgColor: 'bg-yellow-50'

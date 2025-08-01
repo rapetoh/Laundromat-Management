@@ -7,13 +7,31 @@ files:
       - build/**/*
       - node_modules/**/*
       - public/electron.js
-      - database/**/*
+      - public/preload.js
+      - public/index.html
+      - public/icon.ico
 extraMetadata:
   main: build/electron.js
 appId: com.pressia.laundry
 productName: Pressia Laundry Management
+extraResources:
+  - from: public/icon.ico
+    to: icon.ico
 win:
-  target: nsis
+  target:
+    - target: nsis
+      arch:
+        - x64
   icon: public/icon.ico
+  requestedExecutionLevel: asInvoker
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Pressia Laundry Management
+  installerIcon: public/icon.ico
+  uninstallerIcon: public/icon.ico
+  installerHeaderIcon: public/icon.ico
 extends: react-cra
 electronVersion: 25.9.8

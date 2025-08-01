@@ -105,4 +105,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   }
 });
 
-console.log('electronAPI exposed to renderer process'); 
+console.log('electronAPI exposed to renderer process');
+console.log('Available methods:', Object.keys(contextBridge.exposeInMainWorld)); 
