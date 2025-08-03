@@ -12,8 +12,7 @@ const resources = {
         tagline: 'Laundry Management System',
         role: 'Role',
         roles: {
-          employee: 'Employee',
-          manager: 'Manager',
+          cashier: 'Cashier',
           admin: 'Administrator'
         },
         username: 'Username',
@@ -265,8 +264,7 @@ const resources = {
         tagline: 'Système de Gestion de Blanchisserie',
         role: 'Rôle',
         roles: {
-          employee: 'Employé',
-          manager: 'Gestionnaire',
+          cashier: 'Caissier',
           admin: 'Administrateur'
         },
         username: 'Nom d\'utilisateur',

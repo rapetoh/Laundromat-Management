@@ -57,29 +57,15 @@ export const AuthProvider = ({ children }) => {
         'edit_settings',
         'view_address_book',
         'edit_address_book',
-        'view_tracking',
-        'manage_users'
-      ],
-      manager: [
-        'view_dashboard',
-        'create_orders',
-        'edit_orders',
-        'delete_orders',
-        'view_orders',
-        'view_expenses',
-        'create_expenses',
-        'edit_expenses',
-        'delete_expenses',
-        'view_address_book',
-        'edit_address_book',
         'view_tracking'
       ],
-      employee: [
+      cashier: [
         'view_dashboard',
         'create_orders',
         'edit_orders',
         'view_orders',
-        'view_expenses',
+        'view_address_book',
+        'edit_address_book',
         'view_tracking'
       ]
     };

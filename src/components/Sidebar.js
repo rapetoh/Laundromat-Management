@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { FiHome, FiPlusCircle, FiList, FiDollarSign, FiSettings, FiTrendingUp, FiTrendingDown, FiClock, FiCheckCircle, FiGlobe, FiUsers, FiSearch, FiLogOut, FiUser } from 'react-icons/fi';
+import { FiHome, FiPlusCircle, FiList, FiDollarSign, FiSettings, FiTrendingUp, FiTrendingDown, FiClock, FiCheckCircle, FiGlobe, FiUsers, FiSearch, FiLogOut, FiUser, FiLock } from 'react-icons/fi';
 import { formatCurrency } from '../utils/formatters';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -20,11 +20,16 @@ const Sidebar = ({ stats, onLanguageToggle, onLogout, user }) => {
     { path: '/settings', name: t('sidebar.settings'), icon: FiSettings, permission: 'view_settings' }
   ];
 
-  const filteredNavItems = navItems.filter(item => hasPermission(item.permission));
-
   const handleLogout = () => {
     onLogout();
     navigate('/login');
+  };
+
+  const handleNavClick = (item, e) => {
+    if (!hasPermission(item.permission)) {
+      e.preventDefault();
+      return false;
+    }
   };
 
   return (
@@ -64,22 +69,31 @@ const Sidebar = ({ stats, onLanguageToggle, onLogout, user }) => {
       {/* Navigation */}
       <nav className="flex-1 p-4">
         <div className="space-y-2">
-          {filteredNavItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) =>
-                `flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                  isActive
-                    ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-600'
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`
-              }
-            >
-              <item.icon className="w-5 h-5" />
-              <span className="font-medium">{item.name}</span>
-            </NavLink>
-          ))}
+          {navItems.map((item) => {
+            const hasAccess = hasPermission(item.permission);
+            return (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                onClick={(e) => handleNavClick(item, e)}
+                className={({ isActive }) =>
+                  `flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors relative ${
+                    hasAccess
+                      ? isActive
+                        ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-600'
+                        : 'text-gray-700 hover:bg-gray-50'
+                      : 'text-gray-400 cursor-not-allowed opacity-60'
+                  }`
+                }
+              >
+                <item.icon className={`w-5 h-5 ${!hasAccess ? 'filter blur-[0.5px]' : ''}`} />
+                <span className={`font-medium ${!hasAccess ? 'filter blur-[0.5px]' : ''}`}>{item.name}</span>
+                {!hasAccess && (
+                  <FiLock className="w-4 h-4 text-gray-400 ml-auto" title="Permission required" />
+                )}
+              </NavLink>
+            );
+          })}
         </div>
       </nav>
 

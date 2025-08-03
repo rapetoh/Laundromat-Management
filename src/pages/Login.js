@@ -10,9 +10,9 @@ const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [formData, setFormData] = useState({
-    username: '',
-    password: '',
-    role: 'employee'
+    username: 'cashier',
+    password: 'cashier123',
+    role: 'cashier'
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -36,8 +36,7 @@ const Login = () => {
       // Vérification simple (en production, ceci devrait être côté serveur)
       const validCredentials = {
         admin: { username: 'admin', password: 'admin123' },
-        manager: { username: 'manager', password: 'manager123' },
-        employee: { username: 'employee', password: 'employee123' }
+        cashier: { username: 'cashier', password: 'cashier123' }
       };
 
       const selectedRole = formData.role;
@@ -88,8 +87,7 @@ const Login = () => {
               onChange={handleInputChange}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
-              <option value="employee">{t('login.roles.employee')}</option>
-              <option value="manager">{t('login.roles.manager')}</option>
+              <option value="cashier">{t('login.roles.cashier')}</option>
               <option value="admin">{t('login.roles.admin')}</option>
             </select>
           </div>
@@ -154,8 +152,7 @@ const Login = () => {
           <h3 className="text-sm font-medium text-gray-700 mb-2">{t('login.demoCredentials')}</h3>
           <div className="text-xs text-gray-600 space-y-1">
             <p><strong>Admin:</strong> admin / admin123</p>
-            <p><strong>Manager:</strong> manager / manager123</p>
-            <p><strong>Employee:</strong> employee / employee123</p>
+            <p><strong>Cashier:</strong> cashier / cashier123</p>
           </div>
         </div>
       </div>
