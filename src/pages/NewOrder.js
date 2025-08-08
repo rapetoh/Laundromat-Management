@@ -26,7 +26,7 @@ const NewOrder = ({ onOrderCreated }) => {
     if (window.electronAPI) {
       console.log('electronAPI methods:', Object.keys(window.electronAPI));
       // Test if the API is working
-      if (window.electronAPI.test) {
+      if (window.electronAPI.test) {   
         console.log('Test result:', window.electronAPI.test());
       }
     }
